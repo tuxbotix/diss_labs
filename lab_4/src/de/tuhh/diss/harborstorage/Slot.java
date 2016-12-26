@@ -5,42 +5,54 @@ import de.tuhh.diss.harborstorage.sim.StoragePlace;
 public class Slot implements StoragePlace {	
 	
 	private int number;
-	private int posX;
-	private int posY;
+	private int positionX;
+	private int positionY;
 	private int width;
 	private int height;
 	private int depth;
 	private int loadCapacity;
 	private int containedPacket; //same reason as for Packet.location save index of packets[] which will contain the given packet
 	
-	public Slot(int number, int posX, int posY, int width, int height, int depth, int loadCapacity){
-            
+	public Slot(int number, int positionX, int positionY, int width, int height, int depth, int loadCapacity){
+        this.number = number;
+        this.positionX = positionX;
+        this.positionY= positionY;
+        this.width = width;
+        this.height= height;
+        this.depth=depth;
+        this.loadCapacity = loadCapacity;
+        this.containedPacket = -1;// -1 = no packet here. packetID >= 0;
 	}
 	
 	public int getNumber() {
-		return 0; // TODO: Replace this with your own code. 
+		return number; // TODO: Replace this with your own code. 
 	}
 
 	public int getWidth() {
-		return 0; // TODO: Replace this with your own code. 
+		return width; // TODO: Replace this with your own code. 
 	}
 
 	public int getHeight() {
-		return 0; // TODO: Replace this with your own code. 
+		return height; // TODO: Replace this with your own code. 
 	}
 	
 	public int getDepth() {
-		return 0; // TODO: Replace this with your own code. 
+		return depth; // TODO: Replace this with your own code. 
 	}
 	public int getLoadCapacity() {
-		return 0; // TODO: Replace this with your own code. 
+		return loadCapacity; // TODO: Replace this with your own code. 
 	}
 	public int getPositionX() {
-		return 0; // TODO: Replace this with your own code. 
+		return positionX; // TODO: Replace this with your own code. 
 	}
 	
 	public int getPositionY() {
-		return 0; // TODO: Replace this with your own code. 
+		return positionY; // TODO: Replace this with your own code. 
 	}
-
+	public int getContainedPacket(){
+		return containedPacket;
+	}
+	public void setContainedPacket(int containedPacket){
+		this.containedPacket = containedPacket;
+	}
 }

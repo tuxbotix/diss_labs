@@ -12,73 +12,87 @@ import de.tuhh.diss.io.SimpleIO;
  */
 public class SimpleHarborStorageTest {
 
-	private 
-		static HarborStorageManagement hsm;
-	
-	private static boolean testTooLargePacket(){
+	private static HarborStorageManagement hsm;
+
+	private static boolean testTooLargePacket() {
 		boolean refuse = false;
-		int width=10;
-		int height=10;
-		int depth=10;
+		int width = 10;
+		int height = 10;
+		int depth = 10;
 		int weight = 500;
 		String description = "Really Large And Heavy Packet";
-		
+
 		SimpleIO.println("Test1: trying to put too large packet in rack");
-		try{
+		try {
 			hsm.storePacket(width, height, depth, description, weight);
-		}
-		catch(StorageException e){
+		} catch (StorageException e) {
 			SimpleIO.println("Package storage refused, package too large");
 			refuse = true;
 		}
-		
+
 		return refuse;
 	}
-	
-	private static int producePacketOverflow(){
+
+	private static int producePacketOverflow() {
 		final int NUM_PACKETS = 50;
-		int storedPackets=0;
-		
-		int width=1;
-		int height=1;
-		int depth=1;
+		int storedPackets = 0;
+
+		int width = 1;
+		int height = 1;
+		int depth = 1;
 		int weight = 1;
 		String description = "Small packet";
-				
+
 		SimpleIO.println("Test2: trying to put many small packets in rack");
-		while(storedPackets<=NUM_PACKETS){
-			try{
+		while (storedPackets <= NUM_PACKETS) {
+			try {
 				hsm.storePacket(width, height, depth, description, weight);
-			}
-			catch(StorageException e){
+			} catch (StorageException e) {
 				SimpleIO.println("Harbor storage full");
 				break;
 			}
 			storedPackets++;
 		}
-		
+
 		return storedPackets;
-		
+
 	}
-	
-	private static void startTestProcedure(){
-		
-		////////////// Test 1 ////////////		
-		if(testTooLargePacket()){
+
+	private static void getAllPackets() {
+		Packet[] packets = hsm.getPackets();
+		System.out.println("TEST 3, going to retrieve "+packets.length+" packets");
+		try {
+			for (int i = 0; i < packets.length; i++) {
+				hsm.retrievePacket(packets[i].getDescription());
+			}
+		} catch (StorageException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private static void startTestProcedure() {
+
+		// //////////// Test 1 ////////////
+		if (testTooLargePacket()) {
 			SimpleIO.println("Test successfull, too large packet was refused");
-		}else{
+		} else {
 			SimpleIO.println("Test failed, too large packet was stored");
 		}
-		//////////// Test 2 //////////////
+		// ////////// Test 2 //////////////
 		final int MAX_SLOTS_IN_RACK = 29;
-		int storedPackets=producePacketOverflow();
-		if(storedPackets==MAX_SLOTS_IN_RACK){
-			SimpleIO.println("Test successfull, exactly 29 packets stored in rack");	
-		}else{
-			SimpleIO.println("Test failed, "+storedPackets+" packets stored. Expected 29.");
+		int storedPackets = producePacketOverflow();
+		if (storedPackets == MAX_SLOTS_IN_RACK) {
+			SimpleIO.println("Test successfull, exactly 29 packets stored in rack");
+		} else {
+			SimpleIO.println("Test failed, " + storedPackets
+					+ " packets stored. Expected 29.");
 		}
+		
+		/// TEST 3
+		
+		getAllPackets();
 	}
-	
+
 	public static void main(String[] args) {
 		hsm = new HarborStorageManagement();
 		startTestProcedure();
