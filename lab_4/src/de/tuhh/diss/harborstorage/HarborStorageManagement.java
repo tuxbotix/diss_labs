@@ -16,12 +16,17 @@ public class HarborStorageManagement implements HighBayStorage {
 	private CraneControl craneController;
 	private int curMaxPacketId = 0;// id will start from 1
 
+	/**
+	 * Constructor
+	 */
 	public HarborStorageManagement() {
 		PhysicalHarborStorage pp = new PhysicalHarborStorage();
 
 		physicalCrane = pp.getCrane();
 		craneController = new CraneControl(physicalCrane);
-		// slots = (Slot[]) pp.getStoragePlacesAsArray();
+
+		//TODO COPY CONSTRUCTOR?
+		
 		StoragePlace[] tempSlots = pp.getStoragePlacesAsArray();
 		slots = new Slot[tempSlots.length];
 		for (int i = 0; i < tempSlots.length; i++) {
@@ -30,6 +35,7 @@ public class HarborStorageManagement implements HighBayStorage {
 					tempSlots[i].getWidth(), tempSlots[i].getHeight(),
 					tempSlots[i].getDepth(), tempSlots[i].getLoadCapacity());
 		}
+
 		packets = new Packet[tempSlots.length];
 		for (int i = 0; i < packets.length; i++) {
 			packets[i] = null;
@@ -37,6 +43,15 @@ public class HarborStorageManagement implements HighBayStorage {
 		packetCount = 0;
 	}
 
+	/**
+	 * Store the packet
+	 * @param width Width of packet
+	 * @param height
+	 * @param depth
+	 * @param description
+	 * @param weight
+	 * @return packetID Created packet's ID. If failed, -1
+	 */
 	public int storePacket(int width, int height, int depth,
 			String description, int weight) throws StorageException {
 		if (packetCount >= slots.length) {
@@ -49,8 +64,7 @@ public class HarborStorageManagement implements HighBayStorage {
 			// create the packet
 			// store the packet
 			Packet packet = createPacket(width, height, depth, description,
-					weight);
-			packet.setLocation(slot.getNumber());
+					weight,slot.getNumber());
 			int index = insertPacketToArray(packet);
 			if (index >= 0) {
 				craneController.storePacket(slot.getPositionX(),
@@ -61,31 +75,40 @@ public class HarborStorageManagement implements HighBayStorage {
 				System.out.println("Packet inserted" + packetCount);
 			} else {
 				System.out.println("packet storage issue");
-				throw new StorageException("Cannot store Packet in the array!"); // ideally
-																					// this
-																					// cannot
-																					// happen
-																					// as
-																					// packetCount
-																					// track
-																					// this.
+				throw new StorageException("Cannot store Packet in the array!"); 
+				// ideally this cannot happen as packetCount track this.
 			}
 		} else {
-			System.out.println("no slot");
+//			System.out.println("no slot");
 			throw new StorageException("No Suitable Slot is available");
 		}
 		return packetId;
 	}
 
+	/**
+	 * A small method to keep track of packet ID's and assign new ID's. Always call this*
+	 * @param width
+	 * @param height
+	 * @param depth
+	 * @param description
+	 * @param weight
+	 * @param slotNum
+	 * @return The created packet
+	 */
 	private Packet createPacket(int width, int height, int depth,
-			String description, int weight) {
+			String description, int weight, int slotNum) {
 		curMaxPacketId++;
 		int id = curMaxPacketId;
 		Packet packet = new Packet(width, height, depth, description, weight,
-				id);
+				id, slotNum);
 		return packet;
 	}
 
+	/**
+	 * Retrieve a packet by a given description. If descriptions are duplicated in multiple packets, the first match will be retrieved
+	 * @param description packet description 
+	 */
+	
 	public void retrievePacket(String description) throws StorageException {
 		for (int i = 0; i < packets.length; i++) {
 			if (packets[i] !=null && packets[i].getDescription().equals(description)) {
@@ -99,11 +122,17 @@ public class HarborStorageManagement implements HighBayStorage {
 					packetCount--;// decrement packet count
 					packets[i] = null;
 					slots[index].setContainedPacket(-1);
+				}else{
+					throw new StorageException("No Package was found matching description");
 				}
 			}
 		}
 	}
 
+	/**
+	 * Get the packets
+	 * @return An array containing Packet objects. Filtered for Null's and invalid ID's
+	 */
 	public Packet[] getPackets() {
 		Packet[] packetsNew = new Packet[packetCount];
 		int iter = 0;
@@ -116,10 +145,21 @@ public class HarborStorageManagement implements HighBayStorage {
 		return packetsNew;
 	}
 
+	/**
+	 * Shutdown on app closure.
+	 */
 	public void shutdown() {
 		craneController.shutdown();
 	}
 
+	/**
+	 * Find the best slot. P.S. Does not consider shortest distance from the crane.
+	 * @param dx
+	 * @param dy
+	 * @param dz
+	 * @param weight
+	 * @return A slot object
+	 */
 	private Slot findSuitableSlot(int dx, int dy, int dz, int weight) {
 		Slot tempSlot = null;
 		int minHeight = Integer.MAX_VALUE;
@@ -146,6 +186,11 @@ public class HarborStorageManagement implements HighBayStorage {
 		return tempSlot;
 	}
 
+	/**
+	 * Insert a packet to the packet Array in this class.
+	 * @param packet
+	 * @return The Array index where this packet was stored
+	 */
 	private int insertPacketToArray(Packet packet) {
 		int packetIndex = -1;
 		for (int i = 0; i < packets.length; i++) {
@@ -169,6 +214,12 @@ public class HarborStorageManagement implements HighBayStorage {
 		return packet;
 	}
 
+	/**
+	 * Get slot array index by slot number. Useful to refer and modify a slot.
+	 * NOTE May be deprecated if the slot[] by PhysicalHarborStorage is in same order.
+	 * @param number
+	 * @return
+	 */
 	private int getSlotArrayIdxByNumber(int number) {
 		int index = -1;
 
