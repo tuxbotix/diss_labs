@@ -92,22 +92,28 @@ public class CraneControl {
 	 * @return Success or not (if and only if the crane reach to given position and it is not stalled)
 	 */
 	public boolean moveToX(int x) {
-		boolean stalled = false;
-		int err = x - physicalCrane.getPositionX();// if err is positive, move to right
-		
-		while (err !=0 && !stalled) {// until error ==0;
+		boolean success = false;
+		int err = 0;// if err is positive, move
+					// to right
+		while (true) {
+			err = x - physicalCrane.getPositionX();// if err is positive, move
+													// to right
 			if (err > 0) {
 				physicalCrane.forward();
 			} else if (err < 0) {
 				physicalCrane.backward();
 			} else {
 				physicalCrane.stopX();
+				if (x - physicalCrane.getPositionX() == 0) {
+					success = true;
+					break;
+				}
 			}
-			stalled=physicalCrane.isStalledX();
-			err = x - physicalCrane.getPositionX();// if err is positive, move
+			if (physicalCrane.isStalledX()) {
+				break;
+			}
 		}
-		
-		return (err ==0 && !stalled); // error !=0 and not stalled
+		return success;
 	}
 
 	/**
@@ -116,21 +122,31 @@ public class CraneControl {
 	 * @return Success or not (if and only if the crane reach to given position and it is not stalled)
 	 */
 	public boolean moveToY(int y) {
-		boolean stalled = false;
-		int err = y - physicalCrane.getPositionY();// if err is positive, move to right
-		
-		while (err !=0 && !stalled) {// until error ==0;
+		boolean success = false;
+		int err = 0;// if err is positive, move
+					// to right
+		while (true) {
+			err = y - physicalCrane.getPositionY();// if err is positive, move
+													// to right
 			if (err > 0) {
 				physicalCrane.up();
+
 			} else if (err < 0) {
 				physicalCrane.down();
 			} else {
 				physicalCrane.stopY();
+				if (y - physicalCrane.getPositionY() == 0) {// Verify again if
+															// the crane is in
+															// the actual place
+					success = true;
+					break;
+				}
 			}
-			stalled=physicalCrane.isStalledY();
-			err = y - physicalCrane.getPositionY();// if err is positive, move
+			if (physicalCrane.isStalledY()) {
+				break;
+			}
 		}
-		
-		return (err ==0 && !stalled); // error !=0 and not stalled
+
+		return success;
 	}
 }

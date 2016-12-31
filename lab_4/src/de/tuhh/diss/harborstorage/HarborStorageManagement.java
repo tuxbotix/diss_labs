@@ -72,7 +72,7 @@ public class HarborStorageManagement implements HighBayStorage {
 				packetId = packet.getId();
 				slots[getSlotArrayIdxByNumber(slot.getNumber())].setContainedPacket(packetId);
 				packetCount++;
-				System.out.println("Packet inserted" + packetCount);
+				System.out.println("Packet  stored in rack. The ID is" + packetId);
 			} else {
 				System.out.println("packet storage issue");
 				throw new StorageException("Cannot store Packet in the array!"); 
@@ -122,6 +122,7 @@ public class HarborStorageManagement implements HighBayStorage {
 					packetCount--;// decrement packet count
 					packets[i] = null;
 					slots[index].setContainedPacket(-1);
+					System.out.println("Packet Retrieved");
 				}else{
 					throw new StorageException("No Package was found matching description");
 				}
@@ -149,11 +150,13 @@ public class HarborStorageManagement implements HighBayStorage {
 	 * Shutdown on app closure.
 	 */
 	public void shutdown() {
+		System.out.println("System Ends.");
 		craneController.shutdown();
 	}
 
 	/**
-	 * Find the best slot. P.S. Does not consider shortest distance from the crane.
+	 * Find the best slot. 
+	 * NOTE Does not consider shortest distance from the crane.
 	 * @param dx
 	 * @param dy
 	 * @param dz
@@ -203,22 +206,11 @@ public class HarborStorageManagement implements HighBayStorage {
 		return packetIndex;
 	}
 
-	private Packet getPacketById(int id) {
-		Packet packet = null;
-
-		for (int i = 0; i < packets.length; i++) {
-			if (packets[i].getId() == id) {
-				packet = packets[i];
-			}
-		}
-		return packet;
-	}
-
 	/**
 	 * Get slot array index by slot number. Useful to refer and modify a slot.
 	 * NOTE May be deprecated if the slot[] by PhysicalHarborStorage is in same order.
 	 * @param number
-	 * @return
+	 * @return Slot array's index
 	 */
 	private int getSlotArrayIdxByNumber(int number) {
 		int index = -1;

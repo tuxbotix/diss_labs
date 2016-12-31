@@ -10,10 +10,10 @@ import de.tuhh.diss.io.SimpleIO;
  * 
  * Extend this file by adding more test cases to avoid extensive testing via the command line.
  */
+
 public class SimpleHarborStorageTest {
 
 	private static HarborStorageManagement hsm;
-
 	private static boolean testTooLargePacket() {
 		boolean refuse = false;
 		int width = 10;
@@ -21,7 +21,6 @@ public class SimpleHarborStorageTest {
 		int depth = 10;
 		int weight = 500;
 		String description = "Really Large And Heavy Packet";
-
 		SimpleIO.println("Test1: trying to put too large packet in rack");
 		try {
 			hsm.storePacket(width, height, depth, description, weight);
@@ -29,20 +28,17 @@ public class SimpleHarborStorageTest {
 			SimpleIO.println("Package storage refused, package too large");
 			refuse = true;
 		}
-
 		return refuse;
 	}
 
 	private static int producePacketOverflow() {
 		final int NUM_PACKETS = 50;
 		int storedPackets = 0;
-
 		int width = 1;
 		int height = 1;
 		int depth = 1;
 		int weight = 1;
 		String description = "Small packet";
-
 		SimpleIO.println("Test2: trying to put many small packets in rack");
 		while (storedPackets <= NUM_PACKETS) {
 			try {
@@ -53,14 +49,13 @@ public class SimpleHarborStorageTest {
 			}
 			storedPackets++;
 		}
-
 		return storedPackets;
-
 	}
 
 	private static void getAllPackets() {
 		Packet[] packets = hsm.getPackets();
-		System.out.println("TEST 3, going to retrieve "+packets.length+" packets");
+		System.out.println("TEST 3, going to retrieve " + packets.length
+				+ " packets");
 		try {
 			for (int i = 0; i < packets.length; i++) {
 				hsm.retrievePacket(packets[i].getDescription());
@@ -87,9 +82,7 @@ public class SimpleHarborStorageTest {
 			SimpleIO.println("Test failed, " + storedPackets
 					+ " packets stored. Expected 29.");
 		}
-		
-		/// TEST 3
-		
+		// / TEST 3
 		getAllPackets();
 	}
 
@@ -98,5 +91,4 @@ public class SimpleHarborStorageTest {
 		startTestProcedure();
 		hsm.shutdown();
 	}
-
 }

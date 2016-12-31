@@ -12,7 +12,7 @@ public class Packet implements StorageElement {
 	private int location;
 	// We decided to store Slot ID (=number) instead of a slot object as storing
 	// a slot object is duplication.
-	
+
 	/**
 	 * Constructor of the Packet
 	 * 
@@ -23,7 +23,7 @@ public class Packet implements StorageElement {
 	 * @param weight weight
 	 * @param id ID
 	 */
-	
+
 	public Packet(int dx, int dy, int dz, String desc, int weight, int id) {
 		// it is the job of Harbour Storage Management to give unique ID's
 		this.width = dx;
@@ -44,6 +44,7 @@ public class Packet implements StorageElement {
 	 * @param id
 	 * @param location
 	 */
+
 	public Packet(int dx, int dy, int dz, String desc, int weight, int id, int location) {
 		this.width = dx;
 		this.height = dy;
@@ -57,6 +58,7 @@ public class Packet implements StorageElement {
 	/**
 	 * @return
 	 */
+
 	public int getWidth() {
 		return width;
 	}
@@ -89,6 +91,7 @@ public class Packet implements StorageElement {
 	 * Set location of parcel. This will be slot number.
 	 * @param location
 	 */
+
 	public void setLocation(int location) {
 		this.location = location;
 	}
