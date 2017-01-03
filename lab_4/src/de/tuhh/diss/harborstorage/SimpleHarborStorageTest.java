@@ -14,6 +14,7 @@ import de.tuhh.diss.io.SimpleIO;
 public class SimpleHarborStorageTest {
 
 	private static HarborStorageManagement hsm;
+	
 	private static boolean testTooLargePacket() {
 		boolean refuse = false;
 		int width = 10;
