@@ -14,7 +14,7 @@ import de.tuhh.diss.io.SimpleIO;
 public class SimpleHarborStorageTest {
 
 	private static HarborStorageManagement hsm;
-	
+
 	private static boolean testTooLargePacket() {
 		boolean refuse = false;
 		int width = 10;
@@ -53,7 +53,53 @@ public class SimpleHarborStorageTest {
 		return storedPackets;
 	}
 
+	private static int randomProductDimension() {
+		final double RANDOM_MAX = 10;// min = -max as well
+		final int NUM_PACKETS = 50000;
+		int storedPackets = 0;
+		int successTestCount = 0;
+		int actualPacketStored = 0;
+		String description = "Random Sized Packets packet";
+		SimpleIO.println("Test2: trying to put many random sized packets in rack");
+		while (storedPackets < NUM_PACKETS) {
+
+			int width = (int) (Math.random() * RANDOM_MAX * 2 - RANDOM_MAX);
+			int height = (int) (Math.random() * RANDOM_MAX * 2 - RANDOM_MAX);
+			int depth = (int) (Math.random() * RANDOM_MAX * 2);
+			int weight = (int) (Math.random() * RANDOM_MAX * 2);
+
+			boolean isDimsValid = (width > 0 && height > 0 && depth > 0 && weight > 0);
+
+			boolean dimensionExceptionThrown = false;
+			try {
+				hsm.storePacket(width, height, depth, description, weight);
+				actualPacketStored++;
+			} catch (StorageException e) {
+				if (e.getMessage().indexOf("Invalid Packet dimensions") >= 0) {
+					dimensionExceptionThrown = true;
+				} else if (e.getMessage().indexOf("Storage is full") >= 0) {
+					 SimpleIO.println(e.getMessage());
+					break;
+				}
+			}
+			if (isDimsValid != dimensionExceptionThrown) {// if dims are valid,
+															// no exception
+															// should throw, and
+															// other way around
+				successTestCount++;
+			} else {
+				SimpleIO.println("Test failure");
+			}
+			storedPackets++;
+		}
+		SimpleIO.println("Random Packet Store " + successTestCount + "/"
+				+ storedPackets + " tests success. " + actualPacketStored
+				+ " packets stored in rack\n");
+		return storedPackets;
+	}
+
 	private static void getAllPackets() {
+		SimpleIO.println();
 		Packet[] packets = hsm.getPackets();
 		System.out.println("TEST 3, going to retrieve " + packets.length
 				+ " packets");
@@ -84,6 +130,13 @@ public class SimpleHarborStorageTest {
 					+ " packets stored. Expected 29.");
 		}
 		// / TEST 3
+		getAllPackets();
+
+		// TEST 4
+
+		randomProductDimension();
+		
+		// TEST 5
 		getAllPackets();
 	}
 
