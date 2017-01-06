@@ -46,13 +46,8 @@ public class Packet implements StorageElement {
 	 */
 
 	public Packet(int dx, int dy, int dz, String desc, int weight, int id, int location) {
-		this.width = dx;
-		this.height = dy;
-		this.depth = dz;
-		this.description = desc;
-		this.weight = weight;
-		this.id = id;
-		this.location = location;
+		this(dx,dy,dz,desc,weight,id);// call above constructor
+		this.location = location;// set location
 	}
 
 	public int getWidth() {

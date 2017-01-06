@@ -2,7 +2,6 @@ package de.tuhh.diss.harborstorage;
 
 import de.tuhh.diss.harborstorage.sim.PhysicalCrane;
 import de.tuhh.diss.harborstorage.sim.StorageElement;
-import de.tuhh.diss.io.SimpleIO;
 
 public class CraneControl {
 
