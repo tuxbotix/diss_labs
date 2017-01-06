@@ -14,7 +14,8 @@ public class HarborStorageManagement implements HighBayStorage {
 	private Packet[] packets;
 	private int packetCount;
 	private CraneControl craneController;
-	private int curMaxPacketId = 0;// id will start from 1
+	private int curMaxPacketId = 0;// Unique identification number (id) will
+									// start from 1
 
 	/**
 	 * Constructor
@@ -50,11 +51,15 @@ public class HarborStorageManagement implements HighBayStorage {
 	 * Store the packet
 	 * 
 	 * @param width
-	 *            Width of packet
+	 *            of the packet
 	 * @param height
+	 *            of the packet
 	 * @param depth
+	 *            of the packet
 	 * @param description
+	 *            of the packet
 	 * @param weight
+	 *            of the packet
 	 * @return packetID Created packet's ID. If failed, -1
 	 */
 	public int storePacket(int width, int height, int depth,
@@ -68,6 +73,7 @@ public class HarborStorageManagement implements HighBayStorage {
 			// System.out.println("storage full");
 			throw new StorageException("Storage is full");
 		}
+
 		// find a slot. If null returned -> no slot found.
 		Slot slot = findSuitableSlot(width, height, depth, weight);
 
@@ -107,20 +113,18 @@ public class HarborStorageManagement implements HighBayStorage {
 	 * A small method to keep track of packet ID's and assign new ID's. Always
 	 * call this to create and assign ID to a packet.
 	 * 
-	 * @param width
-	 * @param height
-	 * @param depth
-	 * @param description
-	 * @param weight
-	 * @param slotNum
-	 * @return The created packet
+	 * @param width of the packet
+	 * @param height of the packet
+	 * @param depth of the packet
+	 * @param description of the packet
+	 * @param weight of the packet
+	 * @param slot Number of the packet
+	 * @return the created packet
 	 */
-	private Packet createPacket(int width, int height, int depth,
-			String description, int weight, int slotNum) {
+	private Packet createPacket(int width, int height, int depth, String description, int weight, int slotNum) {
 		curMaxPacketId++;
 		int id = curMaxPacketId;
-		Packet packet = new Packet(width, height, depth, description, weight,
-				id, slotNum);
+		Packet packet = new Packet(width, height, depth, description, weight, id, slotNum);
 		return packet;
 	}
 
@@ -128,33 +132,33 @@ public class HarborStorageManagement implements HighBayStorage {
 	 * Retrieve a packet by a given description. If descriptions are duplicated
 	 * in multiple packets, the first match will be retrieved
 	 * 
-	 * @param description
-	 *            packet description
+	 * @param description of the packet 
 	 */
 
 	public void retrievePacket(String description) throws StorageException {
 		boolean foundPacket = false;
 		for (int i = 0; i < packets.length; i++) {
-			if (packets[i] != null
-					&& packets[i].getDescription().equals(description)) {
+			if (packets[i] != null && packets[i].getDescription().equals(description)) {//compares the given description with the description of all the packets
 				retrievePacketById(packets[i].getId());
 				foundPacket = true;
 				break;
 			}
 		}
 		if (!foundPacket) {
-			throw new StorageException(
-					"No Package was found matching description");
+			throw new StorageException("No Package was found matching description");//displays an error when the mentioned package could not be found
 		}
 	}
 
 	/**
+<<<<<<< HEAD
 	 * Retrieve a packet by ID. This is useful when description is not unique.
 	 * We prefer to use this as multiple packets can have same description. ID
 	 * is somewhat like tracking number
+=======
+	 * Overloaded** Retrieve a packet by ID. This is superior when description is not unique.
+>>>>>>> 5c0f530f3cec1bcf09722e9bf623901f132fbb99
 	 * 
-	 * @param description
-	 *            packet description
+	 * @param description of the packet
 	 */
 
 	public void retrievePacketById(int id) throws StorageException {
@@ -166,6 +170,7 @@ public class HarborStorageManagement implements HighBayStorage {
 																				// =
 																				// slot
 																				// number
+
 				if (index >= 0) {// if the array index is valid
 					// call cranecontrol
 					craneController.retrievePacket(slots[index].getPositionX(),
@@ -176,8 +181,9 @@ public class HarborStorageManagement implements HighBayStorage {
 					packets[i] = null;// set packet cell null IMPORTANT
 					// set containedPacket to -1 this means slot is empty.
 					slots[index].setContainedPacket(-1);
-					System.out.println("Packet Retrieved");
+					SimpleIO.println("Packet Retrieved");
 					foundPacket = true;
+
 				} else { // if array index of slots[] is not valid.
 					throw new StorageException(
 							"Issue of finding Slot number of packet");
@@ -214,7 +220,7 @@ public class HarborStorageManagement implements HighBayStorage {
 	 * Shutdown on app closure.
 	 */
 	public void shutdown() {
-		System.out.println("System Ends.");
+		SimpleIO.println("System Ends.");
 		craneController.shutdown();
 	}
 
@@ -267,6 +273,7 @@ public class HarborStorageManagement implements HighBayStorage {
 				minHeight = slotHeight;
 				minDepth = slotDepth;
 				minLoadCapacity = slotLoadCapacity;
+
 			}
 		}
 		return tempSlot;
