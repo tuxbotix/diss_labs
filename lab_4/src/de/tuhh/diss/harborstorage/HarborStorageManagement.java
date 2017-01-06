@@ -26,19 +26,10 @@ public class HarborStorageManagement implements HighBayStorage {
 		physicalCrane = pp.getCrane();
 		craneController = new CraneControl(physicalCrane);
 
-		// TODO COPY CONSTRUCTOR?
+		Slot[] slots = Slot.copyStoragePlaceArr(pp.getStoragePlacesAsArray());
 
-		StoragePlace[] tempSlots = pp.getStoragePlacesAsArray();
-		slots = new Slot[tempSlots.length];
-		for (int i = 0; i < tempSlots.length; i++) {
-			slots[i] = new Slot(tempSlots[i].getNumber(),
-					tempSlots[i].getPositionX(), tempSlots[i].getPositionY(),
-					tempSlots[i].getWidth(), tempSlots[i].getHeight(),
-					tempSlots[i].getDepth(), tempSlots[i].getLoadCapacity());
-		}
-
-		packets = new Packet[tempSlots.length];
-		for (int i = 0; i < packets.length; i++) {
+		packets = new Packet[slots.length];
+		for (int i = 0; i < packets.length; i++) {// make sure all of them null.
 			packets[i] = null;
 		}
 		packetCount = 0;
@@ -57,14 +48,14 @@ public class HarborStorageManagement implements HighBayStorage {
 	 */
 	public int storePacket(int width, int height, int depth,
 			String description, int weight) throws StorageException {
-		if(width <=0 || height <=0 || depth <=0 || weight <=0){
-			throw new StorageException("Invalid Packet dimensions!!!");		
+		if (width <= 0 || height <= 0 || depth <= 0 || weight <= 0) {
+			throw new StorageException("Invalid Packet dimensions!!!");
 		}
 		if (packetCount >= slots.length) {
-//			System.out.println("storage full");
+			// System.out.println("storage full");
 			throw new StorageException("Storage is full");
 		}
-		
+
 		Slot slot = findSuitableSlot(width, height, depth, weight);
 		int packetId = -1;
 		if (slot != null) {// we found a slot
@@ -129,7 +120,7 @@ public class HarborStorageManagement implements HighBayStorage {
 			if (packets[i] != null
 					&& packets[i].getDescription().equals(description)) {
 				retrievePacketById(packets[i].getId());
-				foundPacket=true;
+				foundPacket = true;
 				break;
 			}
 		}
@@ -171,11 +162,9 @@ public class HarborStorageManagement implements HighBayStorage {
 			}
 		}
 		if (!foundPacket) {
-			throw new StorageException(
-					"No Package was with given Id");
+			throw new StorageException("No Package was with given Id");
 		}
 	}
-
 
 	/**
 	 * Get the packets
