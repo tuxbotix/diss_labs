@@ -55,7 +55,7 @@ public class SimpleHarborStorageTest {
 
 	private static int randomProductDimension() {
 		final double RANDOM_MAX = 10;// min = -max as well
-		final int NUM_PACKETS = 50000;
+		final int NUM_PACKETS = 500000;
 		int storedPackets = 0;
 		int successTestCount = 0;
 		int actualPacketStored = 0;
@@ -65,8 +65,8 @@ public class SimpleHarborStorageTest {
 
 			int width = (int) (Math.random() * RANDOM_MAX * 2 - RANDOM_MAX);
 			int height = (int) (Math.random() * RANDOM_MAX * 2 - RANDOM_MAX);
-			int depth = (int) (Math.random() * RANDOM_MAX * 2);
-			int weight = (int) (Math.random() * RANDOM_MAX * 2);
+			int depth = (int)  (Math.random() * RANDOM_MAX * 2 - RANDOM_MAX);
+			int weight = (int)  (Math.random() * RANDOM_MAX * 2 - RANDOM_MAX);
 
 			boolean isDimsValid = (width > 0 && height > 0 && depth > 0 && weight > 0);
 
