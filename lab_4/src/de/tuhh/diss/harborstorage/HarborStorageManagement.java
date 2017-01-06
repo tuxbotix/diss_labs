@@ -25,24 +25,11 @@ public class HarborStorageManagement implements HighBayStorage {
 		PhysicalHarborStorage pp = new PhysicalHarborStorage();
 		physicalCrane = pp.getCrane();
 		craneController = new CraneControl(physicalCrane);
-<<<<<<< HEAD
-		StoragePlace[] tempSlots = pp.getStoragePlacesAsArray();
-		slots = new Slot[tempSlots.length];
-		for (int i = 0; i < tempSlots.length; i++) {
-			slots[i] = new Slot(tempSlots[i].getNumber(), tempSlots[i].getPositionX(), tempSlots[i].getPositionY(),
-					tempSlots[i].getWidth(), tempSlots[i].getHeight(), tempSlots[i].getDepth(),
-					tempSlots[i].getLoadCapacity());
-		}
-
-		packets = new Packet[tempSlots.length];
-		for (int i = 0; i < packets.length; i++) {
-=======
 
 		Slot[] slots = Slot.copyStoragePlaceArr(pp.getStoragePlacesAsArray());
 
 		packets = new Packet[slots.length];
 		for (int i = 0; i < packets.length; i++) {// make sure all of them null.
->>>>>>> origin/master
 			packets[i] = null;
 		}
 		packetCount = 0;
@@ -63,16 +50,6 @@ public class HarborStorageManagement implements HighBayStorage {
 	 *            of the packet
 	 * @return packetID Created packet's ID. If failed, -1
 	 */
-<<<<<<< HEAD
-	public int storePacket(int width, int height, int depth, String description, int weight) throws StorageException {
-		if (width <= 0 || height <= 0 || depth <= 0 || weight <= 0) {
-			throw new StorageException("Invalid Packet dimensions!!!"); // displays an error when the user gives
-																		// dimensions for the packet beyond the storage capacity
-		}
-		if (packetCount >= slots.length) {
-			throw new StorageException("Storage is full"); //displays an error when the storage capacity is full
-		}
-=======
 	public int storePacket(int width, int height, int depth,
 			String description, int weight) throws StorageException {
 		if (width <= 0 || height <= 0 || depth <= 0 || weight <= 0) {
@@ -82,8 +59,6 @@ public class HarborStorageManagement implements HighBayStorage {
 			// System.out.println("storage full");
 			throw new StorageException("Storage is full");
 		}
-
->>>>>>> origin/master
 		Slot slot = findSuitableSlot(width, height, depth, weight);
 		int packetId = -1;
 		if (slot != null) {// a slot has been found and then  packet is created and stored.
