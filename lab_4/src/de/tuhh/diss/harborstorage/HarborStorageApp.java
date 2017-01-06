@@ -15,8 +15,8 @@ public class HarborStorageApp {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		hsm = new HarborStorageManagement();// create HarborStorageManagement instance
-		System.out.println("\nWelcome to TUHH/DISS Harbor Storage Management");
+		hsm = new HarborStorageManagement();// creates HarborStorageManagement instance
+		SimpleIO.println("\nWelcome to TUHH/DISS Harbor Storage Management");
 		mainMenu();
 	}
 
@@ -25,15 +25,13 @@ public class HarborStorageApp {
 	 */
 	public static void mainMenu() {
 		SimpleIO.println();
-		System.out.println("*** Main Menu ***");
-		System.out.println("0: Quit Program");
-		System.out.println("1: Store a packet in the highbaystorage");
-		System.out
-				.println("2: Retrieve a packet by description from the highbaystorage. Retrieves first match");
-		System.out
-				.println("3: List and Retrieve packet from selection from the highbaystorage");
+		SimpleIO.println("*** Main Menu ***");
+		SimpleIO.println("0: Quit Program");
+		SimpleIO.println("1: Store a packet in the highbaystorage");
+		SimpleIO.println("2: Retrieve a packet by description from the highbaystorage. Retrieves first match");
+		SimpleIO.println("3: List and Retrieve packet from selection from the highbaystorage");
 		SimpleIO.println();
-		int choice = readZeroOrPositiveIntInLoop("Your choice:");
+		int choice = readZeroOrPositiveIntInLoop("Your choice:"); 
 		SimpleIO.println();
 		choice(choice);
 	}
@@ -48,23 +46,23 @@ public class HarborStorageApp {
 	 */
 	public static void choice(int choice) {
 		switch (choice) {
-		case 0:// on zero, shutdown
+		case 0:// when choice is zero, the system is shutdown
 			hsm.shutdown();
 			break;
 
-		case 1: {
-			storePacketCase(); // store packet
+		case 1: {//when the choice is 1 ,the packet is stored
+			storePacketCase(); 
 			break;
 		}
 		case 2: {
-			getPacketCase(true);// get by description
+			getPacketCase(true);//when the choice is 2, the packet is retrieved by its description
 			break;
 		}
 		case 3: {
-			getPacketCase(false);// get by entry number
+			getPacketCase(false);//when the choice is 2, the packet is retrieved by its entry number
 			break;
 		}
-		default: { // print error and return to main menu
+		default: { // when a number other than the given choice is entered,it displays an error and returns to the main menu
 			SimpleIO.println("Invalid choice.");
 			mainMenu();
 			break;
@@ -73,34 +71,30 @@ public class HarborStorageApp {
 	}
 
 	/**
-	 * Store a packet. Do validation of dimensions and store it.
+	 * Stores the packet.Validates its dimensions and stores it.
 	 */
 	private static void storePacketCase() {
-		System.out.println("*** Store a packet ***");
-		String description = readNonEmptyStringInLoop("Description :");
-		// get dimensions
-		int width = readGreaterThanZeroIntInLoop("Width :");
-		int height = readGreaterThanZeroIntInLoop("Height : ");
-		int depth = readGreaterThanZeroIntInLoop("Depth : ");
-		int weight = readGreaterThanZeroIntInLoop("Weight : ");
+		SimpleIO.println("*** Store a packet ***");
+		String description = readNonEmptyStringInLoop("Description :");//description of the new packet and it cannot be a empty string
+		int width = readGreaterThanZeroIntInLoop("Width :");//width of the packet and the number should be greater than zero
+		int height = readGreaterThanZeroIntInLoop("Height : ");//height of the packet and the number should be greater than zero
+		int depth = readGreaterThanZeroIntInLoop("Depth : ");//depth of the packet and the number should be greater than zero
+		int weight = readGreaterThanZeroIntInLoop("Weight : ");//weight of the packet and the number should be greater than zero
 
 		SimpleIO.println("You entered a packet \"" + description
 				+ "\" of size " + width + "x" + height + "x" + depth
-				+ " and weight " + weight);
-		// Get string -> response of user after printing "shall we store..."
+				+ " and weight " + weight); //displays information about the packet given by the user
+		String choose = readNonEmptyStringInLoop("Shall we store the packet?(y/n)");// Get string -> response of user after printing "shall we store..."
 		// message.
-		String choose = readNonEmptyStringInLoop("Shall we store the packet?(y/n)");
-
-		// Allow "Y" or "y", other choices will skip storage and revert to main
-		// menu.
-		if (choose.equalsIgnoreCase("y")) {
+		if (choose.equalsIgnoreCase("y")) {// Allow "Y" or "y", other choices will skip storage and revert to main
+			// menu.
 			try {
 				hsm.storePacket(width, height, depth, description, weight);
 			} catch (StorageException e) {
 				SimpleIO.println(e.getMessage());
 			}
 		}
-		// After all is done (Yes or no), go back to main menu
+		// After everything is done (Yes or no), goes back to main menu
 		mainMenu();
 	}
 
@@ -115,11 +109,11 @@ public class HarborStorageApp {
 	private static void getPacketCase(boolean isGetByDesc) {
 		Packet packets[] = hsm.getPackets();// Get currently stored packets
 		if (packets.length > 0) {// if there is at least one packet
-			System.out.println("Available packets:");
+			SimpleIO.println("Available packets:");
 
 			// print packet list
 			for (int i = 0; i < packets.length; i++) {
-				System.out.println((i + 1) + ": Packet \""
+				SimpleIO.println((i + 1) + ": Packet \""
 						+ packets[i].getDescription() + "\" ID: "
 						+ packets[i].getId() + " Size: "
 						+ packets[i].getWidth() + "x" + packets[i].getHeight()
@@ -130,7 +124,7 @@ public class HarborStorageApp {
 			if (isGetByDesc) {
 				SimpleIO.println();
 				String description = readNonEmptyStringInLoop("*** Enter description of packet to be retrieved (0=Abort) ***\n");
-				if (!description.equals("0")) { // if desc ==0, then abort
+				if (!description.equals("0")) { // if description is equal to 0, then abort
 					try {
 						hsm.retrievePacket(description);
 					} catch (StorageException e) {
@@ -214,8 +208,8 @@ public class HarborStorageApp {
 		boolean fail = false;// a flag to keep the loop running.
 		int attempts = 0;
 		do {
-			attempts++;// count attempts
-			SimpleIO.print(requestMessage);// print the given message, then read the input.
+			attempts++;// to count the number of  attempts
+			SimpleIO.print(requestMessage);// print the given message and then read the input.
 			try {
 				intValue = SimpleIO.readInt();
 				if (intValue < 0) {
