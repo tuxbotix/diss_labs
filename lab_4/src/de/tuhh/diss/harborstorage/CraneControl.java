@@ -26,12 +26,12 @@ public class CraneControl {
 		physicalCrane.start();
 
 		if (physicalCrane.getPositionX() == physicalCrane.getLoadingPosX()
-				&& physicalCrane.getPositionY() == physicalCrane.getLoadingPosY()) {
+				&& physicalCrane.getPositionY() == physicalCrane.getLoadingPosY()) { // To verify if the crane is at the loading position
 			physicalCrane.loadElement(packet);
 			moveToXY(x, y);
 			physicalCrane.storeElement();
 			moveToLoadPos();
-		} else {// To verify if the crane is at the loading position
+		} else {// Ensures that the crane starts from the loading position
 			moveToLoadPos();
 			storePacket(x, y, packet);
 		}
@@ -49,12 +49,12 @@ public class CraneControl {
 		physicalCrane.start();
 
 		if (physicalCrane.getPositionX() == physicalCrane.getLoadingPosX()
-				&& physicalCrane.getPositionY() == physicalCrane.getLoadingPosY()) {
+				&& physicalCrane.getPositionY() == physicalCrane.getLoadingPosY()) {// To verify if the crane is at the loading position
 			moveToXY(x, y);
 			physicalCrane.retrieveElement();
 			moveToLoadPos();
 			packet = physicalCrane.unloadElement();
-		} else {// To verify if the crane is at the loading position
+		} else { // Ensures that the crane starts from the loading position
 			moveToLoadPos();
 			packet = retrievePacket(x, y);
 		}
@@ -62,7 +62,7 @@ public class CraneControl {
 	}
 
 	/**
-	 * Move to a given XY coordinate. This don't take the shortest route**
+	 * Move to a given XY coordinate.Note that this doesn't take the shortest route**
 	 * @param x
 	 * @param y
 	 */
@@ -72,7 +72,7 @@ public class CraneControl {
 	}
 
 	/**
-	 * Move to loading position
+	 * Enables the crane to move to the loading position
 	 */
 	private void moveToLoadPos() {
 		moveToX(physicalCrane.getLoadingPosX());
@@ -80,7 +80,7 @@ public class CraneControl {
 	}
 
 	/**
-	 * Shutdown the crane
+	 * Shuts down the crane
 	 */
 	public void shutdown() {
 		physicalCrane.shutdown();
@@ -89,22 +89,20 @@ public class CraneControl {
 	/**
 	 * 
 	 * @param x Position in x axis
-	 * @return Success or not (if and only if the crane reach to given position and it is not stalled)
+	 * @return Success is when the crane reaches the given position and it doesn't stall
 	 */
 	public boolean moveToX(int x) {
 		boolean success = false;
-		int err = 0;// if err is positive, move
-					// to right
+		int err = 0;
 		while (true) {
-			err = x - physicalCrane.getPositionX();// if err is positive, move
-													// to right
-			if (err > 0) {
+			err = x - physicalCrane.getPositionX();
+			if (err > 0) {// if err is positive, move the crane to the right in x-axis
 				physicalCrane.forward();
-			} else if (err < 0) {
+			} else if (err < 0) {// if err is negative, move the crane to the left in x-axis
 				physicalCrane.backward();
-			} else {
+			} else {// if err is zero, then stop the crane
 				physicalCrane.stopX();
-				if (x - physicalCrane.getPositionX() == 0) {
+				if (x - physicalCrane.getPositionX() == 0) {// Reverifies that the crane is in the actual place
 					success = true;
 					break;
 				}
@@ -119,25 +117,21 @@ public class CraneControl {
 	/**
 	 * 
 	 * @param y position in Y axis
-	 * @return Success or not (if and only if the crane reach to given position and it is not stalled)
+	 * @return Success is when the crane reaches the given position and it doesn't stall
 	 */
 	public boolean moveToY(int y) {
 		boolean success = false;
-		int err = 0;// if err is positive, move
-					// to right
+		int err = 0;
 		while (true) {
-			err = y - physicalCrane.getPositionY();// if err is positive, move
-													// to right
+			err = y - physicalCrane.getPositionY();// if err is positive, move the crane to the right in y-axis
 			if (err > 0) {
 				physicalCrane.up();
 
-			} else if (err < 0) {
+			} else if (err < 0) {// if err is negative, move the crane to the left in y-axis
 				physicalCrane.down();
-			} else {
+			} else {// if err is zero, then stop the crane
 				physicalCrane.stopY();
-				if (y - physicalCrane.getPositionY() == 0) {// Verify again if
-															// the crane is in
-															// the actual place
+				if (y - physicalCrane.getPositionY() == 0) {// Reverifies that the crane is in the actual place
 					success = true;
 					break;
 				}
