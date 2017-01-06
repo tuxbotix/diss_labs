@@ -5,7 +5,6 @@ import de.tuhh.diss.harborstorage.sim.HighBayStorage;
 import de.tuhh.diss.harborstorage.sim.StorageException;
 import de.tuhh.diss.harborstorage.sim.PhysicalHarborStorage;
 import de.tuhh.diss.harborstorage.sim.PhysicalCrane;
-import de.tuhh.diss.harborstorage.sim.StoragePlace;
 import de.tuhh.diss.io.SimpleIO;
 
 public class HarborStorageManagement implements HighBayStorage {
@@ -23,16 +22,28 @@ public class HarborStorageManagement implements HighBayStorage {
 	public HarborStorageManagement() {
 		PhysicalHarborStorage pp = new PhysicalHarborStorage();
 
+		// Get physical crane and storagePlace array
 		physicalCrane = pp.getCrane();
 		craneController = new CraneControl(physicalCrane);
 
-		Slot[] slots = Slot.copyStoragePlaceArr(pp.getStoragePlacesAsArray());
-
+		// using custom array copy that use the copy constructor for Slot
+		slots = Slot.copyStoragePlaceArr(pp.getStoragePlacesAsArray());
+		
+		/**
+		 * packet array have same size of slot array
+		 * 
+		 * When a packet is stored, it will be stored in first available cell
+		 * (available = null) When retrieved the cell will be set to null. So
+		 * packet Array index cells are not ordered by id/ time.
+		 * 
+		 * NOTE : Can use/ implement array sort, but no significant gain and
+		 * useless performance overhead.
+		 */
 		packets = new Packet[slots.length];
 		for (int i = 0; i < packets.length; i++) {// make sure all of them null.
 			packets[i] = null;
 		}
-		packetCount = 0;
+		packetCount = 0;// packet count
 	}
 
 	/**
@@ -48,46 +59,53 @@ public class HarborStorageManagement implements HighBayStorage {
 	 */
 	public int storePacket(int width, int height, int depth,
 			String description, int weight) throws StorageException {
+		// validate dimensions.
 		if (width <= 0 || height <= 0 || depth <= 0 || weight <= 0) {
 			throw new StorageException("Invalid Packet dimensions!!!");
 		}
+		// validate enough slots available
 		if (packetCount >= slots.length) {
 			// System.out.println("storage full");
 			throw new StorageException("Storage is full");
 		}
-
+		// find a slot. If null returned -> no slot found.
 		Slot slot = findSuitableSlot(width, height, depth, weight);
-		int packetId = -1;
+
+		int packetId = -1;// default value. packet ID should never be negative.
+
 		if (slot != null) {// we found a slot
 			// create the packet
 			// store the packet
 			Packet packet = createPacket(width, height, depth, description,
 					weight, slot.getNumber());
+			// find available cell on packets[] and insert the packet.
 			int index = insertPacketToArray(packet);
-			if (index >= 0) {
+
+			if (index >= 0) {// if the packet was stored in the packet[]
+				// call craneControl
 				craneController.storePacket(slot.getPositionX(),
 						slot.getPositionY(), packets[index]);
+				// Store packetId
 				packetId = packet.getId();
+				// set containedPacket property of the corresponding slot.
 				slots[getSlotArrayIdxByNumber(slot.getNumber())]
 						.setContainedPacket(packetId);
+				// increment packet count
 				packetCount++;
 				SimpleIO.println("Packet  stored in rack. The ID is "
 						+ packetId);
-			} else {
-
+			} else {// if this happen, something is badly wrong!!
 				throw new StorageException("Cannot store Packet in the array!");
-				// ideally this cannot happen as packetCount track this.
 			}
-		} else {
-			// System.out.println("no slot");
+		} else { // slot not found
 			throw new StorageException("No Suitable Slot is available");
 		}
-		return packetId;
+		return packetId;// if successful, actual packetID, else -1
 	}
 
 	/**
 	 * A small method to keep track of packet ID's and assign new ID's. Always
-	 * call this*
+	 * call this to create and assign ID to a packet.
 	 * 
 	 * @param width
 	 * @param height
@@ -131,37 +149,44 @@ public class HarborStorageManagement implements HighBayStorage {
 	}
 
 	/**
-	 * Overloaded** Retrieve a packet by ID. This is superior when description
-	 * is not unique.
+	 * Retrieve a packet by ID. This is useful when description is not unique.
+	 * We prefer to use this as multiple packets can have same description. ID
+	 * is somewhat like tracking number
 	 * 
 	 * @param description
 	 *            packet description
 	 */
 
 	public void retrievePacketById(int id) throws StorageException {
-		boolean foundPacket = false;
+		boolean foundPacket = false;// flag to check if a packet was found
+		// loop
 		for (int i = 0; i < packets.length; i++) {
-			if (packets[i] != null && packets[i].getId() == id) {
+			if (packets[i] != null && packets[i].getId() == id) {// if found
 				int index = getSlotArrayIdxByNumber(packets[i].getLocation());// location
 																				// =
 																				// slot
 																				// number
-				if (index >= 0) {
+				if (index >= 0) {// if the array index is valid
+					// call cranecontrol
 					craneController.retrievePacket(slots[index].getPositionX(),
 							slots[index].getPositionY());
+
 					packetCount--;// decrement packet count
-					packets[i] = null;
+
+					packets[i] = null;// set packet cell null IMPORTANT
+					// set containedPacket to -1 this means slot is empty.
 					slots[index].setContainedPacket(-1);
 					System.out.println("Packet Retrieved");
 					foundPacket = true;
-				} else {
+				} else { // if array index of slots[] is not valid.
 					throw new StorageException(
 							"Issue of finding Slot number of packet");
 				}
 				break;
 			}
 		}
-		if (!foundPacket) {
+
+		if (!foundPacket) {// if packet was not found
 			throw new StorageException("No Package was with given Id");
 		}
 	}
@@ -176,7 +201,8 @@ public class HarborStorageManagement implements HighBayStorage {
 		Packet[] packetsNew = new Packet[packetCount];
 		int iter = 0;
 		for (int i = 0; i < packets.length; i++) {
-			if (packets[i] != null && packets[i].getId() > 0) {
+			if (packets[i] != null && packets[i].getId() > 0) {// our policy is
+																// packet ID > 0
 				packetsNew[iter] = packets[i];
 				iter++;
 			}
@@ -203,26 +229,44 @@ public class HarborStorageManagement implements HighBayStorage {
 	 * @return A slot object
 	 */
 	private Slot findSuitableSlot(int dx, int dy, int dz, int weight) {
+		// Solving for minimum value problem
 		Slot tempSlot = null;
 		int minHeight = Integer.MAX_VALUE;
 		int minWidth = Integer.MAX_VALUE;
 		int minDepth = Integer.MAX_VALUE;
 		int minLoadCapacity = Integer.MAX_VALUE;
+		//loop
 		for (int i = 0; i < slots.length; i++) {
+			// check if slot is vacant. -> containedPacket <0 = invalid packet id
 			if (slots[i].getContainedPacket() >= 0) {
 				continue;
 			}
+			
 			int slotWidth = slots[i].getWidth();
 			int slotHeight = slots[i].getHeight();
 			int slotDepth = slots[i].getDepth();
 			int slotLoadCapacity = slots[i].getLoadCapacity();
+			
+			/** 
+			 * Combined checks
+			 * 1. Matching slot dimensions (larger or equal than packet). first 4 checks
+			 * 2. Smallest possible slot for the packet. 
+			 * Order of the checks matter for performance :P
+			 */
+			
 			if (slotWidth >= dx && slotHeight >= dy && slotDepth >= dz
-					&& slotLoadCapacity >= weight) {
-				if (slotWidth <= minWidth && slotHeight <= minHeight
-						&& slotDepth <= minDepth
-						&& slotLoadCapacity <= minLoadCapacity) {
-					tempSlot = slots[i];
-				}
+					&& slotLoadCapacity >= weight
+					&& slotWidth <= minWidth
+					&& slotHeight <= minHeight && slotDepth <= minDepth
+					&& slotLoadCapacity <= minLoadCapacity) {
+				
+				tempSlot = slots[i];
+				
+				// Update minimum values
+				minWidth = slotWidth;
+				minHeight = slotHeight;
+				minDepth = slotDepth;
+				minLoadCapacity = slotLoadCapacity;
 			}
 		}
 		return tempSlot;
@@ -235,6 +279,7 @@ public class HarborStorageManagement implements HighBayStorage {
 	 * @return The Array index where this packet was stored
 	 */
 	private int insertPacketToArray(Packet packet) {
+		// default value -1. which is invalid.
 		int packetIndex = -1;
 		for (int i = 0; i < packets.length; i++) {
 			if (packets[i] == null || packets[i].getId() <= 0) {
