@@ -55,10 +55,6 @@ public class Packet implements StorageElement {
 		this.location = location;
 	}
 
-	/**
-	 * @return
-	 */
-
 	public int getWidth() {
 		return width;
 	}

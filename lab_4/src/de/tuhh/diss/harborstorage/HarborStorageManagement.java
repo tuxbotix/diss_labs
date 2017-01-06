@@ -28,6 +28,7 @@ public class HarborStorageManagement implements HighBayStorage {
 		craneController = new CraneControl(physicalCrane);
 
 		// using custom array copy that use the copy constructor for Slot
+		// It is not assumed that slot array is in order of slotNumbers.
 		slots = Slot.copyStoragePlaceArr(pp.getStoragePlacesAsArray());
 		
 		/**
@@ -40,6 +41,7 @@ public class HarborStorageManagement implements HighBayStorage {
 		 * NOTE : Can use/ implement array sort, but no significant gain and
 		 * useless performance overhead.
 		 */
+		
 		packets = new Packet[slots.length];
 		for (int i = 0; i < packets.length; i++) {// make sure all of them null.
 			packets[i] = null;
@@ -150,13 +152,9 @@ public class HarborStorageManagement implements HighBayStorage {
 	}
 
 	/**
-<<<<<<< HEAD
 	 * Retrieve a packet by ID. This is useful when description is not unique.
 	 * We prefer to use this as multiple packets can have same description. ID
 	 * is somewhat like tracking number
-=======
-	 * Overloaded** Retrieve a packet by ID. This is superior when description is not unique.
->>>>>>> 5c0f530f3cec1bcf09722e9bf623901f132fbb99
 	 * 
 	 * @param description of the packet
 	 */
@@ -276,6 +274,8 @@ public class HarborStorageManagement implements HighBayStorage {
 
 			}
 		}
+		// if smallest slot found, tempSlot will be the smallest slot that fit the packet
+		// else it'll be null
 		return tempSlot;
 	}
 

@@ -2,6 +2,7 @@ package de.tuhh.diss.harborstorage;
 
 import de.tuhh.diss.harborstorage.sim.PhysicalCrane;
 import de.tuhh.diss.harborstorage.sim.StorageElement;
+import de.tuhh.diss.io.SimpleIO;
 
 public class CraneControl {
 
@@ -27,6 +28,7 @@ public class CraneControl {
 
 		if (physicalCrane.getPositionX() == physicalCrane.getLoadingPosX()
 				&& physicalCrane.getPositionY() == physicalCrane.getLoadingPosY()) { // To verify if the crane is at the loading position
+			
 			physicalCrane.loadElement(packet);
 			moveToXY(x, y);
 			physicalCrane.storeElement();
@@ -50,6 +52,7 @@ public class CraneControl {
 
 		if (physicalCrane.getPositionX() == physicalCrane.getLoadingPosX()
 				&& physicalCrane.getPositionY() == physicalCrane.getLoadingPosY()) {// To verify if the crane is at the loading position
+			
 			moveToXY(x, y);
 			physicalCrane.retrieveElement();
 			moveToLoadPos();
@@ -65,10 +68,12 @@ public class CraneControl {
 	 * Move to a given XY coordinate.Note that this doesn't take the shortest route**
 	 * @param x
 	 * @param y
+	 * @return true if both axis were moved successfully
 	 */
-	private void moveToXY(int x, int y) {
-		moveToX(x);
-		moveToY(y);
+	private boolean moveToXY(int x, int y) {
+		boolean xSuccess = moveToX(x);
+		boolean ySuccess = moveToY(y);
+		return xSuccess && ySuccess;
 	}
 
 	/**
@@ -140,7 +145,6 @@ public class CraneControl {
 				break;
 			}
 		}
-
 		return success;
 	}
 }
