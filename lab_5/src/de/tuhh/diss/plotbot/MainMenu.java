@@ -1,12 +1,16 @@
 package de.tuhh.diss.plotbot;
 
 import lejos.nxt.Button;
+import lejos.nxt.Motor;
 import lejos.util.TextMenu;
 
 public class MainMenu {
 
-	private static final String[] ITEMS = {"Anchor"};	//add new text menu entries here
-	private	static final String TITLE = "Choose Shape to draw:";
+	private static final String[] ITEMS = { "Anchor", "TEST1" }; // add new text
+																	// menu
+																	// entries
+																	// here
+	private static final String TITLE = "Choose Shape to draw:";
 	private TextMenu menu;
 
 	/**
@@ -15,18 +19,24 @@ public class MainMenu {
 	public MainMenu() {
 		menu = new TextMenu(ITEMS, 1, TITLE);
 	}
-	public Plottable select(){
+
+	public Plottable select() {
 		int selection = -1;
 		do {
 			selection = menu.select();
-		}while(selection < 0);
+		} while (selection < 0);
 
-		while(Button.ENTER.isDown()) {
+		while (Button.ENTER.isDown()) {
+
 		}
+
 		Plottable toDraw = null;
-		if (selection == 0) {
+		if (selection == 0) {// anchor
 			toDraw = new Anchor();
-			//Think about what you have to do to start the drawing routine
+			// Think about what you have to do to start the drawing routine
+		}
+		if(selection ==1){
+			Motor.C.rotate(5*360);
 		}
 		return toDraw;
 	}
