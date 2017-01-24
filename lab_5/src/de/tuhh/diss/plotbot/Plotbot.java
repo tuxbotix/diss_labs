@@ -13,7 +13,7 @@ public class Plotbot {
 //		LCD.drawString("Good Luck!", 0, 1);
 //		Button.ESCAPE.waitForPressAndRelease();
 		
-		PlotbotControl control= new PlotbotControl();
+		
 
 		if (isCalibrated) {
 			// Call your MainMenu from here after you deleted the example code
@@ -25,7 +25,7 @@ public class Plotbot {
 		} else {
 			// TODO Calibration start
 			
-			isCalibrated= control.calibrationRoutine();
+			isCalibrated= PlotbotControl.getInstance().calibrationRoutine();
 			MainMenu myMainMenu = new MainMenu();
 			Plottable s = myMainMenu.select();
 		}
