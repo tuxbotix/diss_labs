@@ -36,7 +36,7 @@ public class MainMenu {
 			// Think about what you have to do to start the drawing routine
 		}
 		if(selection ==1){
-			Motor.C.rotate(5*360);
+			
 		}
 		return toDraw;
 	}

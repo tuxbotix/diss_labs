@@ -28,7 +28,8 @@ public class PlotbotControl {
 	 * hardware
 	 */
 	private LightSensor lightSensor;
-	private TouchSensor limitSwitch;
+	private TouchSensor armLimitSwitch;
+	private TouchSensor penLimitSwitch;
 	private NXTRegulatedMotor wheelMotor;
 	private NXTRegulatedMotor armMotor;
 	private NXTRegulatedMotor penMotor;
@@ -36,14 +37,14 @@ public class PlotbotControl {
 	/**
 	 * localization variables, limits
 	 */
-	private int swivelArmMaxHalfRange;
-	private double globalXCoord;
-	private double globalYCoord;
+	private double swivelArmMaxHalfRange;// +- this angle (degrees) from center
+											// of arm (arm straight)
+	private Coord globalLocation;
 	private double armTheta;
 	private double jointY;
 	private double armBackslash;// degrees
 	private double wheelBackslash;// mm, distance travelled by wheel
-
+	private int penRange;// range will be degrees to move pen up and down.
 	/**
 	 * timer and related variables
 	 */
@@ -57,19 +58,6 @@ public class PlotbotControl {
 	private int armMotorDefaultSpeed;
 	private int wheelMotorDefaultSpeed;
 
-	private final int LIGHT_THRESHOLD = 500;
-	private final int WHEEL_GEAR_RATIO = 5;
-	private final int ARM_GEAR_RATIO = 84;
-	private final int JOINT_TO_LIGHT_SENSOR = 105;
-	private final int JOINT_TO_PEN = 80;
-	private final int WHEEL_DIAMETER = 56;
-
-	private final float ARM_MOTOR_CAL_SPEED = 0.8f;
-	private final int ARM_MOTOR_CAL_ACC = 2000;
-	private final int WHEEL_MOTOR_ACC = 2000;
-
-	private final int TIMER_FREQ = 20; // in Hertz
-
 	/**
 	 * Timer listener
 	 * 
@@ -81,7 +69,7 @@ public class PlotbotControl {
 
 		public MainTimerHandler() {
 			// timer interval in ms. 1000/ freq = delay(ms);
-			mainTimer = new Timer((1000 / TIMER_FREQ), this);
+			mainTimer = new Timer((1000 / Robot.TIMER_FREQ), this);
 		}
 
 		public void mainTimerStart() {
@@ -120,11 +108,12 @@ public class PlotbotControl {
 		wheelMotor = Motor.C;
 		armMotor = Motor.A;
 		penMotor = Motor.B;
-		limitSwitch = new TouchSensor(SensorPort.S1);
+		armLimitSwitch = new TouchSensor(SensorPort.S1);
+		penLimitSwitch = new TouchSensor(SensorPort.S2);
+
+		globalLocation = new Coord(0, 0);
 		swivelArmMaxHalfRange = 0;
 		armBackslash = 0;
-		globalXCoord = 0;
-		globalYCoord = 0;
 		armTheta = 0;
 		jointY = 0;
 		lastReadWheel = 0;
@@ -143,34 +132,34 @@ public class PlotbotControl {
 		LCD.drawString("to Start Calib.", 0, 1);
 		Button.ENTER.waitForPressAndRelease();
 
+		penRange = calibratePen();
+		movePen(false);
+
 		calibrateArm();
 		// LCD.clear();
 		LCD.drawString("Going to initial Pos", 0, 1);
 		LCD.clear();
 		// Wheel gear backslash calculation
 		wheelBackslash = (getWheelBackslash() + getWheelBackslash() + getWheelBackslash()) / 3;
-
+		LCD.drawString("Backslash" + wheelBackslash, 0, 2);
 		while (wheelMotor.isMoving() && armMotor.isMoving()) {
 
 		}
 
-		resetKinematics();
-		
-		LCD.drawString(
-				wheelMotor.getPosition() + " " + armMotor.getPosition(), 0,
-				4);
+		LCD.drawString(wheelMotor.getPosition() + " " + armMotor.getPosition(),
+				0, 4);
 		LCD.drawString("Calibration Done", 0, 1);
-		
+
 		Sound.beep();
-		
+
+		resetKinematics();
 		updateForwardKinematics();
 
 		// setup timer handler (listener)
 		mainTimerHandler = new MainTimerHandler();
 		mainTimerHandler.mainTimerStart();// start timer
-		
-		return true;
 
+		return true;
 	}
 
 	/**
@@ -186,19 +175,18 @@ public class PlotbotControl {
 		/**
 		 * Slower speeds
 		 */
-		armMotor.setAcceleration(ARM_MOTOR_CAL_ACC);
-		armMotor.setSpeed(ARM_MOTOR_CAL_SPEED);// going slower
+		// armMotor.setAcceleration(ARM_MOTOR_CAL_ACC);
+		// armMotor.setSpeed(ARM_MOTOR_CAL_SPEED);// going slower
 		// Get initial position. Assume this is center
-		int swivelArmInitialPos = armMotor.getTachoCount();
+		int swivelArmInitialPos = armMotor.getPosition();
 
-		while (!limitSwitch.isPressed()) {
+		while (!armLimitSwitch.isPressed()) {
 			armMotor.backward(); // replace with position(1)?
 		}
 
 		armMotor.stop();
-
-		int swivelArmMaxHalfRange = Math.abs(armMotor.getTachoCount()
-				- swivelArmInitialPos);
+		int halfRange = Math.abs(armMotor.getPosition() - swivelArmInitialPos);
+		swivelArmMaxHalfRange = Robot.motorAngleToArmAngle(halfRange);
 
 		LCD.drawString("Max Range " + swivelArmMaxHalfRange, 0, 0);
 
@@ -214,39 +202,116 @@ public class PlotbotControl {
 		armBackslash = (getArmBackslash() + getArmBackslash() + getArmBackslash()) / 3;
 
 		// Goto center position.
-		armMotor.rotate((swivelArmMaxHalfRange));
-
+		armMotor.rotate(halfRange - Robot.armAngleToMotorAngle(armBackslash));
 		return true;
 	}
 
+	/**
+	 * Move to both extremes and find the center point which is pen down
+	 * position.
+	 */
+	private int calibratePen() {
+		int upExtreme = 0;
+		penMotor.setStallThreshold(2, 2);
+
+		while (!penLimitSwitch.isPressed()) {
+			penMotor.forward();
+		}
+		penMotor.stop();
+		upExtreme = penMotor.getPosition();
+
+		penMotor.rotate(-40);
+
+		while (!penLimitSwitch.isPressed()) {
+			penMotor.backward();
+		}
+		penMotor.stop();
+		upExtreme = penMotor.getPosition() - upExtreme;
+		penMotor.resetTachoCount();// go forward for lowering pen.
+
+		return upExtreme / 2;
+	}
+
+	/**
+	 * This method is called by the timer and update the location of the robot.
+	 */
 	public void updateForwardKinematics() {
 		int currentArm = armMotor.getTachoCount();
 		int currentWheel = wheelMotor.getTachoCount();
 
-		double armDelta = currentArm - lastReadArm;
-		// TODO perform overflow check
-		double wheelDelta = currentWheel - lastReadWheel;
-
-		lastReadArm = currentArm;
-		lastReadWheel = currentWheel;
-		// TODO perform overflow check
-		if (wheelDelta != 0) {
-			jointY += motorAngleToWheelDistance(wheelDelta);
-		}
-		if (armDelta != 0) {
-			armTheta += motorAngleToArmAngle(armDelta);
-		}
-
-		globalXCoord = Math.sin(Math.toRadians(armTheta)) * JOINT_TO_PEN;
-		globalYCoord = Math.cos(Math.toRadians(armTheta)) * JOINT_TO_PEN
-				+ jointY;
-
-		LCD.drawString("X :" + globalXCoord + " Y :" + globalYCoord, 0, 5);
-		LCD.drawString(armDelta + " " + wheelDelta, 0, 6);
+		globalLocation = Robot.calculateForwardKinematics(currentWheel,
+				currentArm);
+		LCD.drawString(
+				"X :" + globalLocation.x() + " Y :" + globalLocation.y(), 0, 5);
+		// LCD.drawString(armDelta + " " + wheelDelta, 0, 6);
 	}
 
+	/**
+	 * Get robot's current location
+	 * 
+	 * @return
+	 */
+	public Coord getRobotPosition() {
+		updateForwardKinematics();
+		return globalLocation;
+	}
+
+	/**
+	 * move to 0,0 On calibration, motor tachometers are reset. 0 tach (arm
+	 * motor)= center of arm 0 tach (wheel motor) = y=0 location (pen)
+	 */
 	public void moveToStart() {
-		
+		armMotor.rotateTo(0, true);
+		wheelMotor.rotateTo(0, true);
+	}
+
+	/**
+	 * Goto a given coordinate
+	 * Both actuators will activate at same time.
+	 * 
+	 * @param coord - destination
+	 * @return success status. Fails if bounds exceed.
+	 */
+
+	public boolean moveTo(Coord coord) {
+		double values[] = Robot.calculateInverseKinematics(coord);
+		if (values != null && Math.abs(values[1]) > swivelArmMaxHalfRange) {
+			moveWheel(values[0], true);
+			moveArm(values[1], true);
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * Move pen up or down NEVER Run this without calibration!!!
+	 * 
+	 * @param down
+	 */
+
+	public void movePen(boolean down) {// down = true, go down
+		int penMotorLocation = penMotor.getPosition();
+
+		if (!down) {
+			while (!penLimitSwitch.isPressed()) {
+				penMotor.rotateTo(0);
+			}
+			penMotor.stop();
+		} else {
+			// rotate -90 deg. with dead reconing.
+			// Uses motor stall condition to avoid accidents
+
+			while (!penMotor.isStalled()) {
+				penMotor.rotateTo(-90);
+			}
+
+			while (!penLimitSwitch.isPressed()) {
+				penMotor.rotateTo(-penRange + 90);// rotate in backward
+													// direction.
+			}
+			penMotor.stop();
+		}
 	}
 
 	/**
@@ -257,7 +322,7 @@ public class PlotbotControl {
 	private double getWheelBackslash() {
 
 		// drive until light sensor is hit.
-		while (lightSensor.getNormalizedLightValue() > LIGHT_THRESHOLD) {
+		while (lightSensor.getNormalizedLightValue() > Robot.LIGHT_THRESHOLD) {
 			wheelMotor.backward();
 		}
 
@@ -269,8 +334,8 @@ public class PlotbotControl {
 		int previousValue = lightSensor.getNormalizedLightValue();
 
 		// detect rising edge. (black to white transition
-		while (!(previousValue < LIGHT_THRESHOLD && lightSensor
-				.getNormalizedLightValue() > LIGHT_THRESHOLD)) {
+		while (!(previousValue < Robot.LIGHT_THRESHOLD && lightSensor
+				.getNormalizedLightValue() > Robot.LIGHT_THRESHOLD)) {
 
 			wheelMotor.forward();
 			// LCD.drawInt(lightSensor.getNormalizedLightValue(), 4, 0, 1);
@@ -278,11 +343,11 @@ public class PlotbotControl {
 
 		wheelMotor.stop();
 
-		wheelBackslashInit = motorAngleToWheelDistance(Math.abs(wheelMotor
-				.getTachoCount() - wheelBackslashInit));
+		wheelBackslashInit = Robot.motorAngleToWheelDistance(Math
+				.abs(wheelMotor.getTachoCount() - wheelBackslashInit));
 
 		// move forward to align pen to 0.
-		moveWheel(JOINT_TO_LIGHT_SENSOR - JOINT_TO_PEN);
+		moveWheel(Robot.JOINT_TO_LIGHT_SENSOR - Robot.JOINT_TO_PEN);
 		wheelMotor.stop();
 
 		return wheelBackslashInit;
@@ -297,10 +362,11 @@ public class PlotbotControl {
 
 		// Slower speeds.
 
-		armMotor.setAcceleration(ARM_MOTOR_CAL_ACC / 2);
-		armMotor.setSpeed(ARM_MOTOR_CAL_SPEED / 2);// going slower for backslash
+		// armMotor.setAcceleration(ARM_MOTOR_CAL_ACC / 2);
+		// armMotor.setSpeed(ARM_MOTOR_CAL_SPEED / 2);// going slower for
+		// backslash
 
-		while (!limitSwitch.isPressed()) {
+		while (!armLimitSwitch.isPressed()) {
 			// LCD.drawString("Swinging the arm", 0,1);
 			armMotor.backward(); // replace with position(1)?
 		}
@@ -309,20 +375,19 @@ public class PlotbotControl {
 		int armBackslashInit = armMotor.getTachoCount();
 
 		// TODO Better to do event listener
-		while (limitSwitch.isPressed()) {
+		while (armLimitSwitch.isPressed()) {
 			// LCD.drawString("Swinging the arm", 0,1);
 			armMotor.forward(); // replace with position(1)?
 		}
 
-		armBackslashInit = Math
-				.abs(armBackslashInit - armMotor.getTachoCount());
+		armBackslashInit = Math.abs(armBackslashInit - armMotor.getPosition());
 		armMotor.stop();
 
 		// normal speeds
-		armMotor.setAcceleration(4000);// defaults
-		armMotor.setSpeed(armMotorDefaultSpeed);// going slower for backslash
+		// armMotor.setAcceleration(4000);// defaults
+		// armMotor.setSpeed(armMotorDefaultSpeed);// going slower for backslash
 
-		return (double) armBackslashInit / ARM_GEAR_RATIO;
+		return (double) armBackslashInit / Robot.ARM_GEAR_RATIO;
 	}
 
 	/**
@@ -330,14 +395,14 @@ public class PlotbotControl {
 	 * positive = counterclockwise negative = clockwise if counter clockwise,
 	 * add backslash
 	 */
-	public boolean rotateArm(int angle) {
-		if (Math.abs(armAngleToMotorAngle(angle) + armMotor.getPosition()) < swivelArmMaxHalfRange) {
-//			if (angle - armMotor.getPosition() > 0) {// if positive, arm rotates
-														// counterclockwise
-//				armMotor.rotate((int) (angle + armBackslash));
-//			} else {
-				armMotor.rotate(angle);
-//			}
+	public boolean moveArm(double angle, boolean immidiateReturn) {
+		if (Math.abs(Robot.armAngleToMotorAngle(angle) + armMotor.getPosition()) < swivelArmMaxHalfRange) {
+			// if (angle - armMotor.getPosition() > 0) {// if positive, arm
+			// rotates counterclockwise
+			// armMotor.rotate((int) (angle + armBackslash));
+			// } else {
+			armMotor.rotate((int) angle, immidiateReturn);
+			// }
 			return true;
 		} else {
 			return false;// out of bounds!
@@ -345,58 +410,52 @@ public class PlotbotControl {
 	}
 
 	/**
+	 * Same as moveArm, immidiateReturn is false.
+	 * 
+	 * @param angle
+	 * @return
+	 */
+	public boolean moveArm(double angle) {
+		return moveArm(angle, false);
+	}
+
+	/**
 	 * Specify in mm, positive = forward, negativ = backward
 	 */
-	public void moveWheel(double value) {
+	public boolean moveWheel(double value, boolean immidiateReturn) {
 		// TODO backslash compensation
-		wheelMotor.rotate(distanceToWheelMotorAngle(value));
-	}
-
-	public int armAngleToMotorAngle(double angle) {
-		return (int) angle * ARM_GEAR_RATIO;
+		wheelMotor.rotate(Robot.distanceToWheelMotorAngle(value),
+				immidiateReturn);
+		return true;
 	}
 
 	/**
-	 * Convert motor angle to arm angle
+	 * Same as above, immidiateReturn variable is false by default
 	 * 
-	 * @param
-	 * @return
+	 * @param value
 	 */
-	public double motorAngleToArmAngle(double angle) {
-		return angle / ARM_GEAR_RATIO;
+	public boolean moveWheel(double value) {
+		return moveWheel(value, false);
 	}
 
 	/**
-	 * Convert distance to motor angle (for wheels)
+	 * reset kinematics wheel motor position is -80 relative to global
+	 * coordinates. But 0 relative to the motor!
 	 * 
-	 * @param angle
-	 * @return
-	 */
-	public int distanceToWheelMotorAngle(double angle) {
-		return (int) (angle * 360 * WHEEL_GEAR_RATIO / (Math.PI * WHEEL_DIAMETER));
-	}
-
-	/**
-	 * Convert motor angle to distance in mm (for wheels)
-	 * 
-	 * @param angle
-	 * @return
-	 */
-	public double motorAngleToWheelDistance(double angle) {
-		return (angle / WHEEL_GEAR_RATIO) / 360 * Math.PI * WHEEL_DIAMETER;
-	}
-
-	/**
-	 * reset kinematics
 	 */
 	private void resetKinematics() {
-		globalXCoord = 0;
-		globalYCoord = 0;
+
+		/**
+		 * Tachometers reset
+		 */
 		wheelMotor.resetTachoCount();
 		armMotor.resetTachoCount();
-		lastReadArm = 0;
-		lastReadWheel = 0;
-		jointY = -80;
-		armTheta = 0;
+
+		globalLocation.setValue(0, 0);// global coords reset.
+		double out[] = Robot.calculateInverseKinematics(globalLocation);
+		// using this equation is reliable than manual setting
+		// apply the inverse kinematics
+		jointY = out[0];
+		armTheta = out[1];
 	}
 }

@@ -9,11 +9,9 @@ public class Plotbot {
 
 	public static void main(String[] args) {
 		// Some example code to check if the build process works
-//		LCD.drawString("Compiled successfully", 0, 0);
-//		LCD.drawString("Good Luck!", 0, 1);
-//		Button.ESCAPE.waitForPressAndRelease();
-		
-		
+		// LCD.drawString("Compiled successfully", 0, 0);
+		// LCD.drawString("Good Luck!", 0, 1);
+		// Button.ESCAPE.waitForPressAndRelease();
 
 		if (isCalibrated) {
 			// Call your MainMenu from here after you deleted the example code
@@ -24,13 +22,23 @@ public class Plotbot {
 			// draw anything, if the robot angles are not yet calibrated!
 		} else {
 			// TODO Calibration start
-			
-			isCalibrated= PlotbotControl.getInstance().calibrationRoutine();
+
+			isCalibrated = PlotbotControl.getInstance().calibrationRoutine();
 			MainMenu myMainMenu = new MainMenu();
 			Plottable s = myMainMenu.select();
+			if (s != null) {
+				
+				PlotbotControl.getInstance().movePen(true);
+				PlotbotControl.getInstance().movePen(false);
+				
+				PlotbotControl.getInstance().moveTo(new Coord(40, 100));
+				
+				PlotbotControl.getInstance().movePen(true);
+				PlotbotControl.getInstance().movePen(false);
+			}
 		}
-//		LCD.drawString("Compiled successfully", 0, 0);
-//		LCD.drawString("Good Luck!", 0, 1);
+		// LCD.drawString("Compiled successfully", 0, 0);
+		// LCD.drawString("Good Luck!", 0, 1);
 		Button.ESCAPE.waitForPressAndRelease();
 	}
 
