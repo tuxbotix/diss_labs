@@ -65,7 +65,7 @@ public class MainMenu {
 		}
 		
 		case 3:{
-			toDraw = new Line(new Coord(-20, 60), new Coord(20, 20));
+			toDraw = new Line(new Coord(20, 60), new Coord(0, 20));
 		}
 		
 		default: {

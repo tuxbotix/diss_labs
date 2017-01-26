@@ -2,6 +2,7 @@ package de.tuhh.diss.plotbot.geometry;
 
 import de.tuhh.diss.plotbot.lowerLayer.PlotbotControl;
 import de.tuhh.diss.plotbot.lowerLayer.Robot;
+import lejos.nxt.LCD;
 import lejos.util.Timer;
 import lejos.util.TimerListener;
 
@@ -51,6 +52,7 @@ public class Line implements Plottable {
 		public void timedOut() {
 			if(!trajectoryPlanner()){
 				timerStop();
+				control.stopMotion();
 			}
 		}
 	}
@@ -66,15 +68,18 @@ public class Line implements Plottable {
 		control = pc;
 		// move to start position
 		if (!control.moveTo(startPoint)) {
+			LCD.drawString("fail*", 0, 2);
 			return;
 		}
+		LCD.drawString("line Init", 0, 2);
 
 		PlotTimerHandler plotTimer = new PlotTimerHandler();
 		plotTimer.timerStart();
-
+		LCD.drawString("timer started", 0, 3);
 		while (plotTimer.timerStatus) {
 
 		}
+		LCD.drawString("timer stopped", 0, 3);
 	}
 
 	/**
@@ -89,6 +94,7 @@ public class Line implements Plottable {
 
 		// if the robot is close enough to end point, stop drawing.
 		if (currentPosition.getDistance(endPoint) < Robot.DEAD_BAND) {
+			LCD.drawString("DEADBAND",0,4);
 			return false;
 		}
 
@@ -126,7 +132,8 @@ public class Line implements Plottable {
 			targetCoord.setValue(targetX, targetY);
 		}
 
-		if (!control.moveTo(targetCoord)) {
+		if (!control.moveTo(targetCoord,true)) {
+			LCD.drawString("traj f"+(int)targetCoord.x()+" "+(int)targetCoord.y(),0,4);
 			return false;
 		}else{
 			return true;

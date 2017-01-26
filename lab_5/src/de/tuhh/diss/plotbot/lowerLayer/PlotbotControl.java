@@ -132,8 +132,8 @@ public class PlotbotControl {
 		globalLocation = Robot.calculateForwardKinematics(currentWheel,
 				currentArm);
 		LCD.drawString(
-				"X :" + globalLocation.x() + " Y :" + globalLocation.y(), 0, 5);
-		// LCD.drawString(armDelta + " " + wheelDelta, 0, 6);
+				"X :" + (int)globalLocation.x() + " Y :" +(int) globalLocation.y(), 0, 5);
+		 LCD.drawString( currentWheel +" "+currentArm, 0, 6);
 	}
 
 	/**
@@ -164,10 +164,21 @@ public class PlotbotControl {
 	 */
 
 	public boolean moveTo(Coord coord) {
+		return moveTo(coord, false);
+	}
+	/**
+	 * Goto a given coordinate
+	 * Both actuators will activate at same time.
+	 * 
+	 * @param coord - destination
+	 * @return success status. Fails if bounds exceed.
+	 */
+
+	public boolean moveTo(Coord coord, boolean immidiateReturn) {
 		double values[] = Robot.calculateInverseKinematics(coord);
-		if (values != null && Math.abs(values[1]) > swivelArmMaxHalfRange) {
-			moveWheel(values[0], true);
-			moveArm(values[1], true);
+		if (values != null && Math.abs(values[1]) < Robot.armAngleToMotorAngle(swivelArmMaxHalfRange)) {
+			moveWheel(Robot.motorAngleToWheelDistance(values[0]), immidiateReturn);
+			moveArm(Robot.motorAngleToArmAngle(values[1]), immidiateReturn);
 			return true;
 		} else {
 			return false;
@@ -183,39 +194,39 @@ public class PlotbotControl {
 	public void movePen(boolean down) {// down = true, go down
 		int penMotorLocation = penMotor.getPosition();
 
-		if (!down) {
+		if (!down) {//up 
 			while (!penLimitSwitch.isPressed()) {
-				penMotor.rotateTo(0);
+				penMotor.rotateTo(10);
 			}
 			penMotor.stop();
 		} else {
 			// rotate -90 deg. with dead reconing.
 			// Uses motor stall condition to avoid accidents
 
-			while (!penMotor.isStalled()) {
-				penMotor.rotateTo(-90);
-			}
+//			while (!penMotor.isStalled()) {
+			penMotor.rotateTo(360);
+//			}
 
-			while (!penLimitSwitch.isPressed()) {
-				penMotor.rotateTo(-penRange + 90);// rotate in backward
-													// direction.
-			}
+//			while (!penLimitSwitch.isPressed()) {
+//				penMotor.rotateTo(-penRange + 90);// rotate in backward
+//													 direction.
+//			}
 			penMotor.stop();
 		}
 	}
 
 	/**
-	 * Rotate arm in degrees. Performs backslash compensation and limits.
+	 * Rotate arm in degrees (Arm angle**). Performs backslash compensation and limits.
 	 * positive = counterclockwise negative = clockwise if counter clockwise,
 	 * add backslash
 	 */
 	public boolean moveArm(double angle, boolean immidiateReturn) {
-		if (Math.abs(Robot.armAngleToMotorAngle(angle) + armMotor.getPosition()) < swivelArmMaxHalfRange) {
+		if (Math.abs(angle + Robot.motorAngleToArmAngle(armMotor.getPosition())) < swivelArmMaxHalfRange) {
 			// if (angle - armMotor.getPosition() > 0) {// if positive, arm
 			// rotates counterclockwise
 			// armMotor.rotate((int) (angle + armBackslash));
 			// } else {
-			armMotor.rotate((int) angle, immidiateReturn);
+			armMotor.rotate(Robot.armAngleToMotorAngle(angle), immidiateReturn);
 			// }
 			return true;
 		} else {
@@ -252,6 +263,11 @@ public class PlotbotControl {
 		return moveWheel(value, false);
 	}
 
+	public void stopMotion(){
+		wheelMotor.stop();
+		armMotor.stop();
+	}
+	
 	/**
 	 * reset kinematics wheel motor position is -80 relative to global
 	 * coordinates. But 0 relative to the motor!
@@ -282,7 +298,7 @@ public class PlotbotControl {
 		LCD.drawString("to Start Calib.", 0, 1);
 		Button.ENTER.waitForPressAndRelease();
 
-		penRange = calibratePen();
+		calibratePen();
 		movePen(false);
 
 		calibrateArm();
@@ -292,6 +308,11 @@ public class PlotbotControl {
 		// Wheel gear backslash calculation
 		wheelBackslash = (getWheelBackslash() + getWheelBackslash() + getWheelBackslash()) / 3;
 		LCD.drawString("Backslash" + wheelBackslash, 0, 2);
+		
+		// move forward to align pen to 0.
+		moveWheel(Robot.JOINT_TO_LIGHT_SENSOR - Robot.JOINT_TO_PEN);
+		wheelMotor.stop();
+		
 		while (wheelMotor.isMoving() && armMotor.isMoving()) {
 
 		}
@@ -360,26 +381,13 @@ public class PlotbotControl {
 	 * Move to both extremes and find the center point which is pen down
 	 * position.
 	 */
-	private int calibratePen() {
-		int upExtreme = 0;
-		penMotor.setStallThreshold(2, 2);
-
-		while (!penLimitSwitch.isPressed()) {
-			penMotor.forward();
-		}
-		penMotor.stop();
-		upExtreme = penMotor.getPosition();
-
-		penMotor.rotate(-40);
+	private void calibratePen() {
+//		penMotor.setStallThreshold(2, 2);
 
 		while (!penLimitSwitch.isPressed()) {
 			penMotor.backward();
 		}
-		penMotor.stop();
-		upExtreme = penMotor.getPosition() - upExtreme;
 		penMotor.resetTachoCount();// go forward for lowering pen.
-
-		return upExtreme / 2;
 	}
 	
 
@@ -415,9 +423,7 @@ public class PlotbotControl {
 		wheelBackslashInit = Robot.motorAngleToWheelDistance(Math
 				.abs(wheelMotor.getTachoCount() - wheelBackslashInit));
 
-		// move forward to align pen to 0.
-		moveWheel(Robot.JOINT_TO_LIGHT_SENSOR - Robot.JOINT_TO_PEN);
-		wheelMotor.stop();
+		
 
 		return wheelBackslashInit;
 	}

@@ -32,6 +32,7 @@ public class Robot {
 
 	public static final double DISTANCE_INCREMENT = 0.4;
 	public static final double DEAD_BAND = 0.5;
+
 	// maximum accuracy enforced to avoid oscillations and other issues.
 
 	public static int armAngleToMotorAngle(double angle) {
@@ -74,8 +75,14 @@ public class Robot {
 	public static Coord calculateForwardKinematics(double jointY,
 			double armAngle) {
 
-		double x = Math.sin(Math.toRadians(armAngle)) * JOINT_TO_PEN;
-		double y = Math.cos(Math.toRadians(armAngle)) * JOINT_TO_PEN + jointY - JOINT_TO_PEN;
+		double x = Math
+				.sin(Math.toRadians(Robot.motorAngleToArmAngle(armAngle)))
+				* JOINT_TO_PEN;
+		double y = Math
+				.cos(Math.toRadians(Robot.motorAngleToArmAngle(armAngle)))
+				* JOINT_TO_PEN
+				+ Robot.motorAngleToWheelDistance(jointY)
+				- JOINT_TO_PEN;
 		return new Coord(x, y);
 	}
 
@@ -97,41 +104,49 @@ public class Robot {
 		// C = coord_y^2 + coord_x^2 - R^2
 		//
 		// if B^2 - 4AC <0, no intersection.
-                if(coord.x() !=0){// small optimization
-                    double b = -2*coord.y();
-                    double c = Math.pow(coord.y(),2) + Math.pow(coord.x(),2) - Math.pow(JOINT_TO_PEN,2);
-                    
-                    double discriminant = Math.pow(b, 2) - 4 * c;
 
-                    // if the circle don't intersect, we don't continue further as the
-                    // arm cannot reach it!!
-                    if (discriminant <= 0) {
-                            return null;
-                    }
+// 		if (coord.x() != 0) {// small optimization
+			double b = -2 * coord.y();
+			double c = Math.pow(coord.y(), 2) + Math.pow(coord.x(), 2)
+					- Math.pow(JOINT_TO_PEN, 2);
 
-                    double x=0;
-                    double y1 = (-b + Math.sqrt(discriminant))/2;
-                    
-                    double y2 = (-b - Math.sqrt(discriminant))/2;
-            
-                    System.out.println("sol :"+y1+" "+y2);
-                    
-                    double theta1 = Math.atan2( coord.x() ,coord.y() - y1);
-                    double theta2 = Math.atan2(coord.x(),coord.y() - y2);
-                    
-                    if(theta1 < theta2){// use theta 1 -> first result
-                            motorPos[0] = y1;
-                            motorPos[1] = Math.toDegrees(theta1);
-                    }else{
-                            motorPos[0] = y2;
-                            motorPos[1] = Math.toDegrees(theta2);
-                    }
-                }else{
-                    motorPos[0] = coord.y();
-                    motorPos[1] = 0;
-                }
-// 		LCD.clear(7);
-// 		LCD.drawString("Kin."+(int)motorPos[0]+ " "+ (int)motorPos[1], 0, 7);
+			double discriminant = Math.pow(b, 2) - 4 * c;
+
+			// if the circle don't intersect, we don't continue further as the
+			// arm cannot reach it!!
+			if (discriminant <= 0) {
+				return null;
+			}
+
+			double x = 0;
+			double y1 = (-b + Math.sqrt(discriminant)) / 2;
+
+			double y2 = (-b - Math.sqrt(discriminant)) / 2;
+                        
+//                         System.out.println("sol:"+y1+" "+y2);
+			
+			double theta1 = Math.atan2(coord.x(), coord.y() - y1);
+			double theta2 = Math.atan2(coord.x(), coord.y() - y2);
+
+			if (theta1 < theta2) {// use theta 1 -> first result
+				motorPos[0] = y1 + JOINT_TO_PEN;
+				motorPos[1] = Math.toDegrees(theta1);
+			} else {
+				motorPos[0] = y2 + JOINT_TO_PEN;
+				motorPos[1] = Math.toDegrees(theta2);
+			}
+// 		} else {
+//                         
+// 			motorPos[0] = coord.y();
+// 			motorPos[1] = 0;
+// 		}
+//                 
+//                System.out.println("sol:"+motorPos[0]+" "+motorPos[1]);
+                
+		motorPos[0] = Robot.distanceToWheelMotorAngle(motorPos[0]);
+		motorPos[1] = Robot.armAngleToMotorAngle(motorPos[1]);
+		// LCD.clear(7);
+		// LCD.drawString("Kin."+(int)motorPos[0]+ " "+ (int)motorPos[1], 0, 7);
 		return motorPos;
 	}
 }
