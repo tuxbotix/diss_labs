@@ -23,12 +23,12 @@ public class Rectangle implements Plottable {
 		Line bottomLine = new Line(bottomRight, bottomLeft);
 		Line leftLine = new Line(bottomLeft, topLeft);
 
-		pc.movePen(true);
+//		pc.movePen(true);
 		topLine.plot(pc);
 		rightLine.plot(pc);
 		bottomLine.plot(pc);
 		leftLine.plot(pc);
-		pc.movePen(false);
+//		pc.movePen(false);
 	}
 
 	public double getWidth() {

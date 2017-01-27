@@ -15,14 +15,19 @@ import lejos.nxt.LCD;
  * 
  */
 public class Robot {
-	public static final int LIGHT_THRESHOLD = 500;
+	public static final int LIGHT_THRESHOLD = 500;// robot 3 600
 	public static final int WHEEL_GEAR_RATIO = 5;
 	public static final int ARM_GEAR_RATIO = 84;
 	public static final int JOINT_TO_LIGHT_SENSOR = 105;
 	public static final int JOINT_TO_PEN = 80;
 	public static final int WHEEL_DIAMETER = 56;
 
-	public static final float ARM_MOTOR_CAL_SPEED = 2f;
+	// At worst case, 19deg per mm at arm rotation limits.(for motor)
+	// 10 deg per mm for wheel motors;
+	// So; setting speed for wheel motors to be half of arm motors will kind of equalize things.
+	public static final float ARM_MOTOR_MAX_SPEED = 600;
+	public static final float ARM_MOTOR_CAL_SPEED = 600;
+	public static final float WHEEL_MOTOR_CAL_SPEED = ARM_MOTOR_CAL_SPEED/2; 
 	public static final int ARM_MOTOR_CAL_ACC = 3000;
 	public static final int WHEEL_MOTOR_ACC = 4000;
 
@@ -30,13 +35,13 @@ public class Robot {
 	private static final int Y_AXIS_MIN = 0;
 	private static final int Y_AXIS_MAX = 250;// 250mm
 
-	public static final double DISTANCE_INCREMENT = 0.4;
-	public static final double DEAD_BAND = 0.5;
+	public static final double DISTANCE_INCREMENT = 2;
+	public static final double DEAD_BAND = 1;
 
 	// maximum accuracy enforced to avoid oscillations and other issues.
 
 	public static int armAngleToMotorAngle(double angle) {
-		return (int) angle * ARM_GEAR_RATIO;
+		return (int) -angle * ARM_GEAR_RATIO;
 	}
 
 	/**
@@ -46,7 +51,7 @@ public class Robot {
 	 * @return
 	 */
 	public static double motorAngleToArmAngle(double angle) {
-		return angle / ARM_GEAR_RATIO;
+		return -angle / ARM_GEAR_RATIO;
 	}
 
 	/**

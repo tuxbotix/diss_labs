@@ -24,38 +24,38 @@ public class Line implements Plottable {
 		slopeAngle = Math.atan2((end.y() - start.y()), (end.x() - start.x()));
 	}
 
-	/**
-	 * A timer is used to plot. relatively better than a while loop.
-	 * Reason : while loop cause unnessesarily load the system.
-	 *
-	 */
-	class PlotTimerHandler implements TimerListener {
-		private Timer mainTimer;
-		public boolean timerStatus;
-
-		public PlotTimerHandler() {
-			mainTimer = new Timer((1000 / Robot.TIMER_FREQ), this);
-			timerStatus = false;
-		}
-
-		public void timerStart() {
-			mainTimer.start();
-			timerStatus = true;
-		}
-
-		public void timerStop() {
-			mainTimer.stop();
-			timerStatus = false;
-		}
-
-		@Override
-		public void timedOut() {
-			if(!trajectoryPlanner()){
-				timerStop();
-				control.stopMotion();
-			}
-		}
-	}
+//	/**
+//	 * A timer is used to plot. relatively better than a while loop.
+//	 * Reason : while loop cause unnessesarily load the system.
+//	 *
+//	 */
+//	class PlotTimerHandler implements TimerListener {
+//		private Timer mainTimer;
+//		public boolean timerStatus;
+//
+//		public PlotTimerHandler() {
+//			mainTimer = new Timer((1000 / Robot.TIMER_FREQ), this);
+//			timerStatus = false;
+//		}
+//
+//		public void timerStart() {
+//			mainTimer.start();
+//			timerStatus = true;
+//		}
+//
+//		public void timerStop() {
+//			mainTimer.stop();
+//			timerStatus = false;
+//		}
+//
+//		@Override
+//		public void timedOut() {
+//			if(!trajectoryPlanner()){
+//				timerStop();
+//				control.stopMotion();
+//			}
+//		}
+//	}
 
 	/**
 	 * Plot function
@@ -71,14 +71,22 @@ public class Line implements Plottable {
 			LCD.drawString("fail*", 0, 2);
 			return;
 		}
+		
 		LCD.drawString("line Init", 0, 2);
 
-		PlotTimerHandler plotTimer = new PlotTimerHandler();
-		plotTimer.timerStart();
+//		PlotTimerHandler plotTimer = new PlotTimerHandler();
+//		plotTimer.timerStart();
+		PlotbotControl.getInstance().movePen(true);
 		LCD.drawString("timer started", 0, 3);
-		while (plotTimer.timerStatus) {
+//		while (plotTimer.timerStatus) {
 
+//		}
+		while(trajectoryPlanner()){
+			
 		}
+		control.stopMotion();
+		
+		PlotbotControl.getInstance().movePen(false);
 		LCD.drawString("timer stopped", 0, 3);
 	}
 
@@ -88,6 +96,7 @@ public class Line implements Plottable {
 	 * @return false if movement should be stopped.
 	 */
 	private boolean trajectoryPlanner(){
+
 		Coord currentPosition = control.getRobotPosition();
 
 		double distanceToEnd = currentPosition.getDistance(endPoint);
@@ -129,7 +138,7 @@ public class Line implements Plottable {
 					* Math.cos(slopeAngle);
 			double targetY = intercept.y() + Robot.DISTANCE_INCREMENT
 					* Math.sin(slopeAngle);
-			targetCoord.setValue(targetX, targetY);
+			targetCoord= new Coord(targetX, targetY);
 		}
 
 		if (!control.moveTo(targetCoord,true)) {

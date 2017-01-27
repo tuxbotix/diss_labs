@@ -5,6 +5,7 @@ import lejos.nxt.Button;
 import lejos.nxt.LCD;
 import lejos.nxt.Motor;
 import lejos.util.ButtonCounter;
+import lejos.util.Delay;
 import lejos.util.TextMenu;
 
 public class MainMenu {
@@ -41,7 +42,7 @@ public class MainMenu {
 		}
 
 		Plottable toDraw = null;
-
+		LCD.clear();
 		switch (selection) {
 
 		case 0: {// anchor
@@ -53,8 +54,11 @@ public class MainMenu {
 		case 1: {
 			int width = getIntFromButtons("Width", 3);
 			int height = getIntFromButtons("Height", 3);
-			toDraw = new Rectangle(new Coord(RECT_X_SHIFT, Y_UPPER_BOUND
-					- height), new Coord(RECT_X_SHIFT + width, Y_UPPER_BOUND));
+//			toDraw = new Rectangle(new Coord(RECT_X_SHIFT, Y_UPPER_BOUND
+//					- height), new Coord(RECT_X_SHIFT + width, Y_UPPER_BOUND));
+			toDraw = new Rectangle(new Coord(10, 50
+					- height), new Coord(50, 80));
+			break;
 		}
 		
 		case 2: {
@@ -62,10 +66,12 @@ public class MainMenu {
 			int height = getIntFromButtons("Height", 3);
 			toDraw = new Diamond(new Coord(RECT_X_SHIFT, Y_UPPER_BOUND
 					- height), new Coord(RECT_X_SHIFT + width, Y_UPPER_BOUND));
+			break;
 		}
 		
 		case 3:{
-			toDraw = new Line(new Coord(20, 60), new Coord(0, 20));
+			toDraw = new Line(new Coord(-40, 20), new Coord(40, 60));
+			break;
 		}
 		
 		default: {
@@ -84,14 +90,21 @@ public class MainMenu {
 		int number = 0;
 		LCD.clear(y);
 		LCD.drawString(message, 0, y);
-
+		LCD.drawInt(0, 12, y);
 		while (!Button.ENTER.isDown()) {
-			if (Button.LEFT.isDown()) {
+			Delay.msDelay(40);
+			if (Button.RIGHT.isDown()) {
 				number++;
-				LCD.drawInt(number, 8, y);
-			} else if (Button.LEFT.isDown() && number < 250) {
+				if(number > 250){
+					number = 250;
+				}
+				LCD.drawInt(number, 12, y);
+			} else if (Button.LEFT.isDown()) {
 				number--;
-				LCD.drawInt(number, 8, y);
+				if(number <0){
+					number=0;
+				}
+				LCD.drawInt(number, 12, y);
 			}
 		}
 
