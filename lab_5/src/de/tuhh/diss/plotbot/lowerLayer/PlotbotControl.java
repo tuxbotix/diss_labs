@@ -388,8 +388,8 @@ public class PlotbotControl {
 		updateForwardKinematics();
 
 		// setup timer handler (listener)
-		mainTimerHandler = new MainTimerHandler();
-		mainTimerHandler.mainTimerStart();// start timer
+//		mainTimerHandler = new MainTimerHandler();
+//		mainTimerHandler.mainTimerStart();// start timer
 
 		return true;
 	}
@@ -495,16 +495,34 @@ public class PlotbotControl {
 		return wheelBackslashInit;
 	}
 
-	// mm/s
-	public void setWheelSpeed(double speed) {
+	// 
+	public void setWheelRawSpeed(double speed) {
 		Robot.distanceToWheelMotorAngle(speed);
 	}
 
 	// mm/s
-	public void setArmSpeed() {
+	public void setArmRawSpeed() {
 
 	}
 
+	public void resetActuatorSpeeds(){
+		wheelMotor.setSpeed(Robot.WHEEL_MOTOR_CAL_SPEED);
+	}
+	
+	public void setActuatorSpeeds(Coord start, Coord end){
+
+		double[] set1 = Robot.calculateInverseKinematics(start);
+		double[] set2 = Robot.calculateInverseKinematics(end);
+		
+		double armRawRate =Math.abs(set2[1]-set1[1]);
+		double wheelRawRate =Math.abs(set2[0]-set1[0]);
+		
+		if(armRawRate !=0 && wheelRawRate !=0){
+			double ratio = wheelRawRate/armRawRate;
+			wheelMotor.setSpeed((float)(Robot.ARM_MOTOR_MAX_SPEED * ratio));
+			armMotor.setSpeed((float)Robot.ARM_MOTOR_MAX_SPEED);
+		}
+	}
 	/**
 	 * Get arm backslash
 	 * 
