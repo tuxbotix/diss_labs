@@ -70,6 +70,9 @@ public class MainMenu {
 			
 			toDraw = new Rectangle(new Coord(RECT_X_SHIFT, Y_UPPER_BOUND
 					- height), new Coord(RECT_X_SHIFT + width, Y_UPPER_BOUND));
+			
+//			toDraw = new Rectangle(new Coord(10, 50 - height),
+//					new Coord(50, 80));
 			break;
 		}
 
@@ -79,6 +82,7 @@ public class MainMenu {
 		}
 
 		default: {
+
 		}
 		}
 		return toDraw;
@@ -113,7 +117,9 @@ public class MainMenu {
 		}
 
 		while (Button.ENTER.isDown()) {
+
 		}
+
 		return number;
 	}
 }
