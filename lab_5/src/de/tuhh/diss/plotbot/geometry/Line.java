@@ -15,7 +15,6 @@ public class Line implements Plottable {
 								// degrees.
 	private PlotbotControl control;
 	private boolean plotStart = false;
-	private double coveredLength = 0;
 
 	public Line(Coord start, Coord end) {
 		startPoint = start;
@@ -25,9 +24,9 @@ public class Line implements Plottable {
 	}
 
 	/**
-	 * A timer is used to plot. relatively better than a while loop.
-	 * Reason : while loop cause unnessesarily load the system.
-	 *
+	 * A timer is used to plot. relatively better than a while loop. Reason :
+	 * while loop cause unnessesarily load the system.
+	 * 
 	 */
 	class PlotTimerHandler implements TimerListener {
 		private Timer mainTimer;
@@ -50,7 +49,7 @@ public class Line implements Plottable {
 
 		@Override
 		public void timedOut() {
-			if(!trajectoryPlanner()){
+			if (!trajectoryPlanner()) {
 				timerStop();
 				control.stopMotion();
 			}
@@ -60,8 +59,8 @@ public class Line implements Plottable {
 	/**
 	 * Plot function
 	 * 
-	 * Pen movements shall be controlled elsewhere
-	 * (save time when drawing shapes like rectangle, etc)
+	 * Pen movements shall be controlled elsewhere (save time when drawing
+	 * shapes like rectangle, etc)
 	 */
 	@Override
 	public void plot(PlotbotControl pc) {
@@ -71,21 +70,23 @@ public class Line implements Plottable {
 			LCD.drawString("fail*", 0, 2);
 			return;
 		}
-		
+
 		LCD.drawString("line Init", 0, 2);
-//
-		
+		//
+
 		PlotbotControl.getInstance().movePen(true);
-		
+
 		PlotTimerHandler plotTimer = new PlotTimerHandler();
 		plotTimer.timerStart();
+
 		LCD.drawString("timer started", 0, 3);
+		
 		while (plotTimer.timerStatus) {
 
 		}
-//		while(trajectoryPlanner()){
-//			
-//		}
+		// while(trajectoryPlanner()){
+		//
+		// }
 		PlotbotControl.getInstance().stopMotion();
 		PlotbotControl.getInstance().resetActuatorSpeeds();
 		PlotbotControl.getInstance().movePen(false);
@@ -97,7 +98,7 @@ public class Line implements Plottable {
 	 * 
 	 * @return false if movement should be stopped.
 	 */
-	private boolean trajectoryPlanner(){
+	private boolean trajectoryPlanner() {
 
 		Coord currentPosition = PlotbotControl.getInstance().getRobotPosition();
 
@@ -105,7 +106,7 @@ public class Line implements Plottable {
 
 		// if the robot is close enough to end point, stop drawing.
 		if (currentPosition.getDistance(endPoint) < Robot.DEAD_BAND) {
-			LCD.drawString("DEADBAND",0,4);
+			LCD.drawString("DEADBAND", 0, 4);
 			return false;
 		}
 
@@ -115,16 +116,14 @@ public class Line implements Plottable {
 		 * If the distance between pen and end point is more than increment;
 		 * 
 		 * A simplified implementation of "pure pursuit algorithm" is used.
-		 * Based on :
-		 * https://github.com/tuxbotix/capstone_bumblebee_due/blob
+		 * Based on : https://github.com/tuxbotix/capstone_bumblebee_due/blob
 		 * /master/trajectory.ino
 		 * 
-		 * 1. Perpendicular to the line is drawn from robot's current
-		 * position.
+		 * 1. Perpendicular to the line is drawn from robot's current position.
 		 * 
-		 * 2. The intersecting point of perpendicular and line = intercept
-		 * 3. Using trigonometry, get point ahead of this intercept = target
-		 * 4. Instruct robot to reach this point.
+		 * 2. The intersecting point of perpendicular and line = intercept 3.
+		 * Using trigonometry, get point ahead of this intercept = target 4.
+		 * Instruct robot to reach this point.
 		 * 
 		 * Note: moveTo will fail (return false) if arm has to be extended
 		 * beyond limits, will immidiately end execution.
@@ -134,24 +133,25 @@ public class Line implements Plottable {
 
 			Coord intercept = getNormalInteceptingPoint(currentPosition);
 
-			double robotToLineDist = intercept.getDistance(currentPosition);
-
 			double targetX = intercept.x() + Robot.DISTANCE_INCREMENT
 					* Math.cos(slopeAngle);
 			double targetY = intercept.y() + Robot.DISTANCE_INCREMENT
 					* Math.sin(slopeAngle);
-			targetCoord= new Coord(targetX, targetY);
-			PlotbotControl.getInstance().setActuatorSpeeds(currentPosition, targetCoord);
+
+			targetCoord = new Coord(targetX, targetY);
+			PlotbotControl.getInstance().setActuatorSpeeds(currentPosition,
+					targetCoord);
 		}
 
-		if (!PlotbotControl.getInstance().moveTo(targetCoord,true)) {
-			LCD.drawString("traj f"+(int)targetCoord.x()+" "+(int)targetCoord.y(),0,4);
+		if (!PlotbotControl.getInstance().moveTo(targetCoord, true)) {
+			LCD.drawString("traj f" + (int) targetCoord.x() + " "
+					+ (int) targetCoord.y(), 0, 4);
 			return false;
-		}else{
+		} else {
 			return true;
 		}
 	}
-	
+
 	/**
 	 * Distance from a point to a line
 	 * 
@@ -167,6 +167,8 @@ public class Line implements Plottable {
 	 * A normal is drawn to the line from a point. This method find the point
 	 * where this normal and line intersect
 	 * 
+	 * Uses vector dot product.
+	 * 
 	 * @param curPosition
 	 *            the point which the normal will be drawn to the line
 	 * @return intersecting point on the line.
@@ -179,23 +181,12 @@ public class Line implements Plottable {
 
 		double dx = x2 - x1;
 		double dy = y2 - y1;
-		dx /= length;
-		dy /= length;
+		dx /= length; // cos theta
+		dy /= length;// sin theta
+		
 		// translate the point and get the dot product
 		double lambda = (dx * (curPosition.x() - x1))
 				+ (dy * (curPosition.y() - y1));
 		return new Coord(((dx * lambda) + x1), ((dy * lambda) + y1));
-	}
-
-	/**
-	 * Check if a point is inside the start and end points of the line. NOTE:
-	 * Ensure to supply a point that lie on this line.
-	 * 
-	 * @param point
-	 * @return
-	 */
-	private boolean isPointInsideLineBounds(Coord point) {
-		return (startPoint.x() >= point.x() && startPoint.y() >= point.y()
-				&& endPoint.x() <= point.x() && endPoint.y() <= point.y());
 	}
 }

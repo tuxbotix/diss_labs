@@ -25,13 +25,13 @@ public class Coord {
 
 	/**
 	 * constructor accepting int
+	 * calling constructor that accept doubles
 	 * 
 	 * @param x
 	 * @param y
 	 */
 	public Coord(int x, int y) {
-		this.x = (double) x;
-		this.y = (double) y;
+		this((double)x, (double) y);
 	}
 
 	/**
@@ -74,19 +74,6 @@ public class Coord {
 
 		return Math.sqrt(Math.pow((coord2.x() - coord1.x()), 2)
 				+ Math.pow((coord2.y() - coord1.y()), 2));
-	}
-
-	/**
-	 * Get angle from coord 1 to coord 2 around coord 3
-	 * 
-	 * @param coord1
-	 * @param coord2
-	 * @param coord3
-	 * @return
-	 */
-	public static double getThreePointAngle(Coord p1, Coord p2, Coord p3) {
-		return Math.atan2(p2.y() - p1.y(), p2.x() - p1.x())
-				- Math.atan2(p3.y() - p1.y(), p3.x() - p1.x());
 	}
 
 	/**

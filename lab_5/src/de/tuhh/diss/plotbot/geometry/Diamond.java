@@ -36,4 +36,7 @@ public class Diamond implements Plottable {
 		pc.movePen(false);
 	}
 
+	public Rectangle getBoundingBox(){
+		return boundingBox;
+	}
 }

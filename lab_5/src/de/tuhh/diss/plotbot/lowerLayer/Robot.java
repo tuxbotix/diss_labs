@@ -24,10 +24,12 @@ public class Robot {
 
 	// At worst case, 19deg per mm at arm rotation limits.(for motor)
 	// 10 deg per mm for wheel motors;
-	// So; setting speed for wheel motors to be half of arm motors will kind of equalize things.
+	// So; setting speed for wheel motors to be half of arm motors will kind of
+	// equalize things.
 	public static final float ARM_MOTOR_MAX_SPEED = 600;
 	public static final float ARM_MOTOR_CAL_SPEED = 600;
-	public static final float WHEEL_MOTOR_CAL_SPEED = ARM_MOTOR_CAL_SPEED/2; 
+	public static final float WHEEL_MOTOR_MAX_SPEED = ARM_MOTOR_MAX_SPEED - 100;
+	public static final float WHEEL_MOTOR_CAL_SPEED = ARM_MOTOR_CAL_SPEED / 2;
 	public static final int ARM_MOTOR_CAL_ACC = 3000;
 	public static final int WHEEL_MOTOR_ACC = 4000;
 
@@ -40,6 +42,13 @@ public class Robot {
 
 	// maximum accuracy enforced to avoid oscillations and other issues.
 
+	/**
+	 * Convert arm angle to Motor angle
+	 * 
+	 * @param angle
+	 *            of arm. Use double for precision
+	 * @return angle for motor in degrees, type int (motor accept int type)
+	 */
 	public static int armAngleToMotorAngle(double angle) {
 		return (int) -angle * ARM_GEAR_RATIO;
 	}
@@ -47,8 +56,9 @@ public class Robot {
 	/**
 	 * Convert motor angle to arm angle
 	 * 
-	 * @param
-	 * @return
+	 * @param Motor
+	 *            angle
+	 * @return Arm angle
 	 */
 	public static double motorAngleToArmAngle(double angle) {
 		return -angle / ARM_GEAR_RATIO;
@@ -60,8 +70,8 @@ public class Robot {
 	 * @param angle
 	 * @return
 	 */
-	public static int distanceToWheelMotorAngle(double angle) {
-		return (int) (angle * 360 * WHEEL_GEAR_RATIO / (Math.PI * WHEEL_DIAMETER));
+	public static int distanceToWheelMotorAngle(double distance) {
+		return (int) (distance * 360 * WHEEL_GEAR_RATIO / (Math.PI * WHEEL_DIAMETER));
 	}
 
 	/**
@@ -75,19 +85,38 @@ public class Robot {
 	}
 
 	/**
+	 * Forward kinematics -> convert motor positions to pen's position in global
+	 * coordinates
 	 * 
+	 * 1. Get Motor positions for both wheel and arm motors. (Both were reset to
+	 * zero on initial position = 0,0
+	 * 
+	 * 2. convert motor angles to arm angle and wheel travel
+	 * 
+	 * 3. Trigonometry!
+	 * 
+	 * 4. Distance travelled by wheels is given relative to initial joint
+	 * position (0,-80 on global coordinates) so we convert to global
+	 * coordinates by subtracting the arm length.
+	 * 
+	 * @param jointY
+	 *            Distance motor travelled since calibration (motor position
+	 *            reset on calibration)
+	 * @param armAngle
+	 * @return
 	 */
-	public static Coord calculateForwardKinematics(double jointY,
-			double armAngle) {
+	public static Coord calculateForwardKinematics(double wheelMotorAngle,
+			double armMotorAngle) {
 
-		double x = Math
-				.sin(Math.toRadians(Robot.motorAngleToArmAngle(armAngle)))
-				* JOINT_TO_PEN;
-		double y = Math
-				.cos(Math.toRadians(Robot.motorAngleToArmAngle(armAngle)))
-				* JOINT_TO_PEN
-				+ Robot.motorAngleToWheelDistance(jointY)
-				- JOINT_TO_PEN;
+		double armAngle = Math.toRadians(Robot
+				.motorAngleToArmAngle((int) armMotorAngle));
+
+		double x = Math.sin(armAngle) * JOINT_TO_PEN;
+
+		double y = Math.cos(armAngle) * JOINT_TO_PEN
+				+ Robot.motorAngleToWheelDistance(wheelMotorAngle)
+				- JOINT_TO_PEN; // Y component of arm + y distance of wheel - arm length
+
 		return new Coord(x, y);
 	}
 
@@ -110,44 +139,44 @@ public class Robot {
 		//
 		// if B^2 - 4AC <0, no intersection.
 
-// 		if (coord.x() != 0) {// small optimization
-			double b = -2 * coord.y();
-			double c = Math.pow(coord.y(), 2) + Math.pow(coord.x(), 2)
-					- Math.pow(JOINT_TO_PEN, 2);
+		// if (coord.x() != 0) {// small optimization
+		double b = -2 * coord.y();
+		double c = Math.pow(coord.y(), 2) + Math.pow(coord.x(), 2)
+				- Math.pow(JOINT_TO_PEN, 2);
 
-			double discriminant = Math.pow(b, 2) - 4 * c;
+		double discriminant = Math.pow(b, 2) - 4 * c;
 
-			// if the circle don't intersect, we don't continue further as the
-			// arm cannot reach it!!
-			if (discriminant <= 0) {
-				return null;
-			}
+		// if the circle don't intersect or become tangent, we don't continue further as the
+		// arm cannot reach it!!
+		if (discriminant <= 0) {
+			return null;
+		}
 
-			double x = 0;
-			double y1 = (-b + Math.sqrt(discriminant)) / 2;
+		double x = 0;
+		double y1 = (-b + Math.sqrt(discriminant)) / 2;
 
-			double y2 = (-b - Math.sqrt(discriminant)) / 2;
-                        
-//                         System.out.println("sol:"+y1+" "+y2);
-			
-			double theta1 = -Math.atan2(coord.y() - y1, coord.x());
-			double theta2 = -Math.atan2(coord.y() - y2, coord.x());
+		double y2 = (-b - Math.sqrt(discriminant)) / 2;
 
-			if (theta1 < theta2) {// use theta 1 -> first result
-				motorPos[0] = y1 + JOINT_TO_PEN;
-				motorPos[1] = Math.toDegrees(theta1) +90;
-			} else {
-				motorPos[0] = y2 + JOINT_TO_PEN;
-				motorPos[1] = Math.toDegrees(theta2) +90;
-			}
-// 		} else {
-//                         
-// 			motorPos[0] = coord.y();
-// 			motorPos[1] = 0;
-// 		}
-//                 
-//                System.out.println("sol:"+motorPos[0]+" "+motorPos[1]);
-                
+
+		// get angle to from x axis to the line drawn from solution to target point.
+		double theta1 = Math.atan2(coord.y() - y1, coord.x());
+		double theta2 = Math.atan2(coord.y() - y2, coord.x());
+
+		if (theta1 < theta2) {// use theta 1 -> first result
+			motorPos[0] = y1 + JOINT_TO_PEN;
+			motorPos[1] = 90 -Math.toDegrees(theta1); // shift angle to Y axis.
+		} else {
+			motorPos[0] = y2 + JOINT_TO_PEN;
+			motorPos[1] = 90 -Math.toDegrees(theta2); // shift angle to Y axis.
+		}
+		// } else {
+		//
+		// motorPos[0] = coord.y();
+		// motorPos[1] = 0;
+		// }
+		//
+		// System.out.println("sol:"+motorPos[0]+" "+motorPos[1]);
+
 		motorPos[0] = Robot.distanceToWheelMotorAngle(motorPos[0]);
 		motorPos[1] = Robot.armAngleToMotorAngle(motorPos[1]);
 		// LCD.clear(7);

@@ -10,7 +10,7 @@ import lejos.util.TextMenu;
 
 public class MainMenu {
 
-	private static final String[] ITEMS = { "Anchor", "Rectangle", "Diamond",
+	private static final String[] ITEMS = { "Anchor", "Rectangle w/ diamond", "Rectangle",
 			"line" };
 	private static final String TITLE = "Choose Shape to draw:";
 	private TextMenu menu;
@@ -47,33 +47,36 @@ public class MainMenu {
 
 		case 0: {// anchor
 			int width = getIntFromButtons("Width", 3);
-			toDraw = new Anchor(width,ANCHOR_X_SHIFT);
+			toDraw = new Anchor(width, ANCHOR_X_SHIFT);
 			break;
 		}
 
-		case 1: {
+		case 1: {// rectangle with diamond
+
 			int width = getIntFromButtons("Width", 3);
 			int height = getIntFromButtons("Height", 3);
-//			toDraw = new Rectangle(new Coord(RECT_X_SHIFT, Y_UPPER_BOUND
-//					- height), new Coord(RECT_X_SHIFT + width, Y_UPPER_BOUND));
-			toDraw = new Rectangle(new Coord(10, 50
-					- height), new Coord(50, 80));
+			toDraw = new Diamond(
+					new Coord(RECT_X_SHIFT, Y_UPPER_BOUND - height), new Coord(
+							RECT_X_SHIFT + width, Y_UPPER_BOUND));
 			break;
 		}
-		
-		case 2: {
+
+		case 2: {// rectangle
+
 			int width = getIntFromButtons("Width", 3);
 			int height = getIntFromButtons("Height", 3);
-			toDraw = new Diamond(new Coord(RECT_X_SHIFT, Y_UPPER_BOUND
-					- height), new Coord(RECT_X_SHIFT + width, Y_UPPER_BOUND));
+			// toDraw = new Rectangle(new Coord(RECT_X_SHIFT, Y_UPPER_BOUND
+			// - height), new Coord(RECT_X_SHIFT + width, Y_UPPER_BOUND));
+			toDraw = new Rectangle(new Coord(10, 50 - height),
+					new Coord(50, 80));
 			break;
 		}
-		
-		case 3:{
+
+		case 3: {// line
 			toDraw = new Line(new Coord(-40, 20), new Coord(40, 60));
 			break;
 		}
-		
+
 		default: {
 
 		}
@@ -95,14 +98,14 @@ public class MainMenu {
 			Delay.msDelay(40);
 			if (Button.RIGHT.isDown()) {
 				number++;
-				if(number > 250){
+				if (number > 250) {
 					number = 250;
 				}
 				LCD.drawInt(number, 12, y);
 			} else if (Button.LEFT.isDown()) {
 				number--;
-				if(number <0){
-					number=0;
+				if (number < 0) {
+					number = 0;
 				}
 				LCD.drawInt(number, 12, y);
 			}
