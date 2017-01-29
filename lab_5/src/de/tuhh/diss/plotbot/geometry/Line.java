@@ -11,17 +11,17 @@ public class Line implements Plottable {
 	private Coord startPoint;
 	private Coord endPoint;
 	private double length;
-	private double slopeAngle;// in radians. No real use of handling this in
-								// degrees.
+	private double slopeAngle;// in radians. No real use of handling this in degrees.
 	private PlotbotControl control;
 	private boolean plotStart = false;
 
 	/**
 	 * Constructor for line
 	 * 
-	 * @param start
-	 * @param end
+	 * @param starting coord 
+	 * @param end coord 
 	 */
+	
 	public Line(Coord start, Coord end) {
 		startPoint = start;
 		endPoint = end;
@@ -31,9 +31,10 @@ public class Line implements Plottable {
 
 	/**
 	 * A timer is used to plot. relatively better than a while loop. Reason :
-	 * while loop cause unnessesarily load the system.
+	 * while loop cause unnecessarily load the system.
 	 * 
 	 */
+	
 	class PlotTimerHandler implements TimerListener {
 		private Timer mainTimer;
 		public boolean timerStatus;
@@ -193,7 +194,6 @@ public class Line implements Plottable {
 		double dy = y2 - y1;
 		dx /= length; // cos theta
 		dy /= length;// sin theta
-
 		// translate the point and get the dot product
 		double lambda = (dx * (curPosition.x() - x1))
 				+ (dy * (curPosition.y() - y1));
