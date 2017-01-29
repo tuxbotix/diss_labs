@@ -32,6 +32,8 @@ public class Robot {
 	public static final float WHEEL_MOTOR_CAL_SPEED = ARM_MOTOR_CAL_SPEED / 2;
 	public static final int ARM_MOTOR_CAL_ACC = 3000;
 	public static final int WHEEL_MOTOR_ACC = 4000;
+	
+	public static final int PEN_DOWN_ROTATION = -420;// rotation needed to lower the pen from top.
 
 	public static final int TIMER_FREQ = 20; // in Hertz
 	private static final int Y_AXIS_MIN = 0;

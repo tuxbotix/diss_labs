@@ -17,7 +17,8 @@ public class Line implements Plottable {
 	private boolean plotStart = false;
 
 	/**
-	 * Constructor
+	 * Constructor for line
+	 * 
 	 * @param start
 	 * @param end
 	 */
@@ -71,30 +72,32 @@ public class Line implements Plottable {
 	public void plot(PlotbotControl pc) {
 		control = pc;
 		// move to start position
+		// If moveTo fails, its unsolvable case, this line will not be drawn
+		// further
 		if (!PlotbotControl.getInstance().moveTo(startPoint)) {
 			LCD.drawString("fail*", 0, 2);
 			return;
 		}
-
 		LCD.drawString("line Init", 0, 2);
-		//
+		PlotbotControl.getInstance().movePen(true); // move pen down
 
-		PlotbotControl.getInstance().movePen(true);
-
+		// start the timer
 		PlotTimerHandler plotTimer = new PlotTimerHandler();
 		plotTimer.timerStart();
 
 		LCD.drawString("timer started", 0, 3);
-		
+
 		while (plotTimer.timerStatus) {
 
 		}
 		// while(trajectoryPlanner()){
 		//
 		// }
-		PlotbotControl.getInstance().stopMotion();
-		PlotbotControl.getInstance().resetActuatorSpeeds();
-		PlotbotControl.getInstance().movePen(false);
+		PlotbotControl.getInstance().stopMotion(); // stop motion
+		PlotbotControl.getInstance().resetActuatorSpeeds(); // reset motor
+															// speeds
+		PlotbotControl.getInstance().movePen(false); // pull up the pen
+
 		LCD.drawString("timer stopped", 0, 3);
 	}
 
@@ -144,10 +147,12 @@ public class Line implements Plottable {
 					* Math.sin(slopeAngle);
 
 			targetCoord = new Coord(targetX, targetY);
+			// set speeds so that the pen's motion will be close to the line's
+			// path
 			PlotbotControl.getInstance().setActuatorSpeeds(currentPosition,
 					targetCoord);
 		}
-
+		//try to move to the new target. If fail return false
 		if (!PlotbotControl.getInstance().moveTo(targetCoord, true)) {
 			LCD.drawString("traj f" + (int) targetCoord.x() + " "
 					+ (int) targetCoord.y(), 0, 4);
@@ -188,7 +193,7 @@ public class Line implements Plottable {
 		double dy = y2 - y1;
 		dx /= length; // cos theta
 		dy /= length;// sin theta
-		
+
 		// translate the point and get the dot product
 		double lambda = (dx * (curPosition.x() - x1))
 				+ (dy * (curPosition.y() - y1));
