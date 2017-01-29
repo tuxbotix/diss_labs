@@ -34,7 +34,7 @@ public class Plotbot {
 //				PlotbotControl.getInstance().moveArm(0);
 //				Delay.msDelay(500);
 //				LCD.drawString("test 2, 40d", 0,3);
-//				PlotbotControl.getInstance().moveArmToRaw(Robot.armAngleToMotorAngle(40), false);
+//				PlotbotControl.getInstance().moveArmToRaw(Robot.armAngleToMotorAngle(55), false);
 //				LCD.drawString(Motor.A.getPosition()+"armpos", 0,3);
 //				Delay.msDelay(2000);
 //				LCD.drawString("test 3, -40d", 0,3);

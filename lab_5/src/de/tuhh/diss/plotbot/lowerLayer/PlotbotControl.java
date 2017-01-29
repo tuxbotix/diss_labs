@@ -125,8 +125,8 @@ public class PlotbotControl {
 	 * This method is called by the timer and update the location of the robot.
 	 */
 	public void updateForwardKinematics() {
-		int currentArm = armMotor.getTachoCount();
-		int currentWheel = wheelMotor.getTachoCount();
+		int currentArm = armMotor.getPosition();
+		int currentWheel = wheelMotor.getPosition();
 
 		globalLocation = Robot.calculateForwardKinematics(currentWheel,
 				currentArm);
@@ -473,7 +473,7 @@ public class PlotbotControl {
 		}
 
 		wheelMotor.stop();
-		int wheelBackslashInit = wheelMotor.getTachoCount();
+		int wheelBackslashInit = wheelMotor.getPosition();
 
 		// Now bring the robot front so that the light sensor is at starting
 		// edge.
@@ -489,7 +489,7 @@ public class PlotbotControl {
 
 		wheelMotor.stop();
 
-		wheelBackslashInit = Math.abs(wheelMotor.getTachoCount()
+		wheelBackslashInit = Math.abs(wheelMotor.getPosition()
 				- wheelBackslashInit);
 
 		return wheelBackslashInit;
@@ -543,7 +543,7 @@ public class PlotbotControl {
 		}
 		armMotor.stop();
 
-		int armBackslashInit = armMotor.getTachoCount();
+		int armBackslashInit = armMotor.getPosition();
 
 		// TODO Better to do event listener
 		while (armLimitSwitch.isPressed()) {

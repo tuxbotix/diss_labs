@@ -130,15 +130,15 @@ public class Robot {
                         
 //                         System.out.println("sol:"+y1+" "+y2);
 			
-			double theta1 = Math.atan2(coord.x(), coord.y() - y1);
-			double theta2 = Math.atan2(coord.x(), coord.y() - y2);
+			double theta1 = -Math.atan2(coord.y() - y1, coord.x());
+			double theta2 = -Math.atan2(coord.y() - y2, coord.x());
 
 			if (theta1 < theta2) {// use theta 1 -> first result
 				motorPos[0] = y1 + JOINT_TO_PEN;
-				motorPos[1] = Math.toDegrees(theta1);
+				motorPos[1] = Math.toDegrees(theta1) +90;
 			} else {
 				motorPos[0] = y2 + JOINT_TO_PEN;
-				motorPos[1] = Math.toDegrees(theta2);
+				motorPos[1] = Math.toDegrees(theta2) +90;
 			}
 // 		} else {
 //                         
