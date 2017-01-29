@@ -10,8 +10,8 @@ import lejos.util.TextMenu;
 
 public class MainMenu {
 
-	private static final String[] ITEMS = { "Anchor", "Rectangle w/ diamond", "Rectangle",
-			"line" };
+	private static final String[] ITEMS = { "Anchor", "Rectangle w/ diamond",
+			"Rectangle", "line" };
 	private static final String TITLE = "Choose Shape to draw:";
 	private TextMenu menu;
 
@@ -43,6 +43,7 @@ public class MainMenu {
 
 		Plottable toDraw = null;
 		LCD.clear();
+
 		switch (selection) {
 
 		case 0: {// anchor
@@ -55,6 +56,7 @@ public class MainMenu {
 
 			int width = getIntFromButtons("Width", 3);
 			int height = getIntFromButtons("Height", 3);
+
 			toDraw = new Diamond(
 					new Coord(RECT_X_SHIFT, Y_UPPER_BOUND - height), new Coord(
 							RECT_X_SHIFT + width, Y_UPPER_BOUND));
@@ -65,10 +67,12 @@ public class MainMenu {
 
 			int width = getIntFromButtons("Width", 3);
 			int height = getIntFromButtons("Height", 3);
-			// toDraw = new Rectangle(new Coord(RECT_X_SHIFT, Y_UPPER_BOUND
-			// - height), new Coord(RECT_X_SHIFT + width, Y_UPPER_BOUND));
-			toDraw = new Rectangle(new Coord(10, 50 - height),
-					new Coord(50, 80));
+			
+			toDraw = new Rectangle(new Coord(RECT_X_SHIFT, Y_UPPER_BOUND
+					- height), new Coord(RECT_X_SHIFT + width, Y_UPPER_BOUND));
+			
+//			toDraw = new Rectangle(new Coord(10, 50 - height),
+//					new Coord(50, 80));
 			break;
 		}
 
@@ -94,8 +98,8 @@ public class MainMenu {
 		LCD.clear(y);
 		LCD.drawString(message, 0, y);
 		LCD.drawInt(0, 12, y);
+
 		while (!Button.ENTER.isDown()) {
-			Delay.msDelay(40);
 			if (Button.RIGHT.isDown()) {
 				number++;
 				if (number > 250) {
@@ -109,6 +113,7 @@ public class MainMenu {
 				}
 				LCD.drawInt(number, 12, y);
 			}
+			Delay.msDelay(100);
 		}
 
 		while (Button.ENTER.isDown()) {

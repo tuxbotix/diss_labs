@@ -12,31 +12,33 @@ public class Diamond implements Plottable {
 
 	@Override
 	public void plot(PlotbotControl pc) {
+		
 		double xMid = (boundingBox.getTopRight().x() - boundingBox
 				.getBottomLeft().x()) / 2;
 		double yMid = (boundingBox.getBottomLeft().y() - boundingBox
 				.getTopRight().y()) / 2;
 
 		Coord top = new Coord(xMid, boundingBox.getTopRight().y());
-		Coord right = new Coord(yMid, boundingBox.getTopRight().x());
+		Coord right = new Coord(boundingBox.getTopRight().x(), yMid);
 		Coord bottom = new Coord(xMid, boundingBox.getBottomLeft().y());
-		Coord left = new Coord(yMid, boundingBox.getBottomLeft().x());
+		Coord left = new Coord(boundingBox.getBottomLeft().x(), yMid);
 
 		// clockwise
-		Line topLine = new Line(top, right);
-		Line rightLine = new Line(right, bottom);
-		Line bottomLine = new Line(bottom, left);
-		Line leftLine = new Line(left, top);
+		Line topRightLine = new Line(top, right);
+		Line rightBottomLine = new Line(right, bottom);
+		Line bottomLeftLine = new Line(bottom, left);
+		Line leftTopLine = new Line(left, top);
 
-		pc.movePen(true);
-		topLine.plot(pc);
-		rightLine.plot(pc);
-		bottomLine.plot(pc);
-		leftLine.plot(pc);
-		pc.movePen(false);
+		pc.moveTo(top);
+//		pc.movePen(true);
+		topRightLine.plot(pc);
+		rightBottomLine.plot(pc);
+		bottomLeftLine.plot(pc);
+		leftTopLine.plot(pc);
+//		pc.movePen(false);
 	}
 
-	public Rectangle getBoundingBox(){
+	public Rectangle getBoundingBox() {
 		return boundingBox;
 	}
 }

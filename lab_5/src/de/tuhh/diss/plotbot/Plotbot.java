@@ -102,9 +102,10 @@ public class Plotbot {
 		} else {
 			LCD.drawString("Calibration Failure", 0, 0);
 		}
+
 		Button.ESCAPE.waitForPressAndRelease();
-
-		PlotbotControl.getInstance().moveTo(new Coord(0, 0));
-
+		if (isCalibrated) {
+			PlotbotControl.getInstance().moveTo(new Coord(0, 0));
+		}
 	}
 }

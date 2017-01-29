@@ -16,6 +16,11 @@ public class Line implements Plottable {
 	private PlotbotControl control;
 	private boolean plotStart = false;
 
+	/**
+	 * Constructor
+	 * @param start
+	 * @param end
+	 */
 	public Line(Coord start, Coord end) {
 		startPoint = start;
 		endPoint = end;
