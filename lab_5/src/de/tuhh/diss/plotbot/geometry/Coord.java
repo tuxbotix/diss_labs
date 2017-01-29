@@ -3,7 +3,7 @@ package de.tuhh.diss.plotbot.geometry;
 /**
  * Strictly contains definitions and methods of a 2D point.
  * 
- * Some of the functionality this class supposed to have is ported to Robot
+ * Some of the functionality of this class is ported to Robot
  * class. Reason : Separation of geometric primitives, operations from robot's
  * kinematics
  * 
