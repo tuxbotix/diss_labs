@@ -74,7 +74,7 @@ public class MainMenu {
 		}
 
 		case 3: {// line
-			toDraw = new Line(new Coord(-40, 20), new Coord(40, 60));
+			toDraw = new Line(new Coord(0, 20), new Coord(20, 60));
 			break;
 		}
 

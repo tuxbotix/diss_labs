@@ -51,37 +51,37 @@ public class PlotbotControl {
 	 * timer and related variables
 	 */
 
-	// private MainTimerHandler mainTimerHandler;
+	private MainTimerHandler mainTimerHandler;
 
 	/**
 	 * Defaults and constants. All in Robot class.
 	 */
-	//
-	// /**
-	// * Timer listener
-	// *
-	// */
-	// class MainTimerHandler implements TimerListener {
-	// private Timer mainTimer;
-	//
-	// public MainTimerHandler() {
-	// // timer interval in ms. 1000/ freq = delay(ms);
-	// mainTimer = new Timer((1000 / Robot.TIMER_FREQ), this);
-	// }
-	//
-	// public void mainTimerStart() {
-	// mainTimer.start();
-	// }
-	//
-	// public void mainTimerStop() {
-	// mainTimer.stop();
-	// }
-	//
-	// @Override
-	// public void timedOut() {
-	// PlotbotControl.getInstance().updateForwardKinematics();
-	// }
-	// }
+
+	/**
+	 * Timer listener
+	 * 
+	 */
+	class MainTimerHandler implements TimerListener {
+		private Timer mainTimer;
+
+		public MainTimerHandler() {
+			// timer interval in ms. 1000/ freq = delay(ms);
+			mainTimer = new Timer((1000 / Robot.TIMER_FREQ), this);
+		}
+
+		public void mainTimerStart() {
+			mainTimer.start();
+		}
+
+		public void mainTimerStop() {
+			mainTimer.stop();
+		}
+
+		@Override
+		public void timedOut() {
+			PlotbotControl.getInstance().updateForwardKinematics();
+		}
+	}
 
 	/**
 	 * Get instance for singleton Reason : to avoid multiple control objects
@@ -130,7 +130,7 @@ public class PlotbotControl {
 
 		// Calculate forward kinematics and update.
 		globalLocation = Robot.calculateForwardKinematics(currentWheel,
-				currentArm);
+				currentArm - swivelArmMaxHalfRange);
 		LCD.drawString("X :" + (int) globalLocation.x() + " Y :"
 				+ (int) globalLocation.y(), 0, 5);
 		LCD.drawString(currentWheel + " " + currentArm, 0, 6);
@@ -148,7 +148,7 @@ public class PlotbotControl {
 	private void resetKinematics() {
 		// Tachometers reset
 		wheelMotor.resetTachoCount();
-		armMotor.resetTachoCount();
+		// armMotor.resetTachoCount();
 		// global coords reset.
 		globalLocation.setValue(0, 0);
 	}
@@ -225,6 +225,9 @@ public class PlotbotControl {
 	public boolean moveTo(Coord coord, boolean immediateReturn) {
 		double values[] = Robot.calculateInverseKinematics(coord);
 
+		LCD.drawString("INV :" + (int) values[0] + " Y :"
+				+ (int) values[1], 0, 7);
+		
 		if (values != null && Math.abs(values[1]) < swivelArmMaxHalfRange) {
 			moveWheelToRaw(values[0], immediateReturn);//
 			return moveArmToRaw(values[1], false);
@@ -234,8 +237,8 @@ public class PlotbotControl {
 	}
 
 	/**
-	 * 1. Rotate arm in degrees (Arm angle*). Center is zero deg., clockwise from
-	 * zero is positive.
+	 * 1. Rotate arm in degrees (Arm angle*). Center is zero deg., clockwise
+	 * from zero is positive.
 	 * 
 	 * 2. Performs backslash compensation and limits.
 	 * 
@@ -246,14 +249,15 @@ public class PlotbotControl {
 	 *            arm motor angle (degrees)
 	 * @param immediateReturn
 	 *            will exit this method immediately after commanding to hardware
-	 * @return true if movement succeed            
+	 * @return true if movement succeed
 	 */
 	public boolean moveArmToRaw(double angle, boolean immediateReturn) {
 		if (Math.abs(angle) < swivelArmMaxHalfRange) {// bound check
 			if (angle - armMotor.getPosition() < 0) {
 				angle = angle + armBackslash;
 			}
-			armMotor.rotateTo((int) angle, immediateReturn);
+			armMotor.rotateTo((int) angle + swivelArmMaxHalfRange,
+					immediateReturn);
 
 			// LCD.drawChar('S', 10, 7);
 			return true;
@@ -266,7 +270,8 @@ public class PlotbotControl {
 	/**
 	 * 
 	 * 
-	 * @param value value in motor angles positive = forward, negative = backward
+	 * @param value
+	 *            value in motor angles positive = forward, negative = backward
 	 * @param immediateReturn
 	 *            will exit this method immediately after commanding to hardware
 	 * @return true if motion succeed
@@ -406,11 +411,14 @@ public class PlotbotControl {
 		Sound.beep();
 
 		resetKinematics();
+		Delay.msDelay(500);
 		updateForwardKinematics();
 
+		wheelMotor.setSpeed(Robot.WHEEL_MOTOR_MAX_SPEED);
+		armMotor.setSpeed(Robot.ARM_MOTOR_MAX_SPEED);
 		// setup timer handler (listener)
-		// mainTimerHandler = new MainTimerHandler();
-		// mainTimerHandler.mainTimerStart();// start timer
+//		mainTimerHandler = new MainTimerHandler();
+//		mainTimerHandler.mainTimerStart();// start timer
 
 		return true;
 	}
@@ -449,6 +457,8 @@ public class PlotbotControl {
 								.motorAngleToArmAngle(swivelArmMaxHalfRange * 2),
 				0, 0);
 
+		armMotor.resetTachoCount();
+
 		/**
 		 * Perform backslash calculation. Get value 3 times and average Since
 		 * arm is "lagging" when going in anticlockwise dir, the angle must be
@@ -461,7 +471,7 @@ public class PlotbotControl {
 		armBackslash = (int) ((getArmBackslash() + getArmBackslash() + getArmBackslash()) / 3);
 
 		// Goto center position.
-		armMotor.rotate((halfRange));
+		armMotor.rotateTo((halfRange));
 		return true;
 	}
 

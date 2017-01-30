@@ -3,6 +3,7 @@ package de.tuhh.diss.plotbot.geometry;
 import de.tuhh.diss.plotbot.lowerLayer.PlotbotControl;
 import de.tuhh.diss.plotbot.lowerLayer.Robot;
 import lejos.nxt.LCD;
+import lejos.util.Delay;
 import lejos.util.Timer;
 import lejos.util.TimerListener;
 
@@ -83,19 +84,19 @@ public class Line implements Plottable {
 		PlotbotControl.getInstance().movePen(true); // move pen down
 
 		// start the timer
-		PlotTimerHandler plotTimer = new PlotTimerHandler();
-		plotTimer.timerStart();
+//		PlotTimerHandler plotTimer = new PlotTimerHandler();
+//		plotTimer.timerStart();
 
 		LCD.drawString("timer started", 0, 3);
 
-		while (plotTimer.timerStatus) {
+//		while (plotTimer.timerStatus) {
 
+//		}
+		while(trajectoryPlanner()){
+			Delay.msDelay(100);
 		}
-		// while(trajectoryPlanner()){
-		//
-		// }
 		PlotbotControl.getInstance().stopMotion(); // stop motion
-		PlotbotControl.getInstance().resetActuatorSpeeds(); // reset motor
+//		PlotbotControl.getInstance().resetActuatorSpeeds(); // reset motor
 															// speeds
 		PlotbotControl.getInstance().movePen(false); // pull up the pen
 
@@ -150,8 +151,8 @@ public class Line implements Plottable {
 			targetCoord = new Coord(targetX, targetY);
 			// set speeds so that the pen's motion will be close to the line's
 			// path
-			PlotbotControl.getInstance().setActuatorSpeeds(currentPosition,
-					targetCoord);
+//			PlotbotControl.getInstance().setActuatorSpeeds(currentPosition,
+//					targetCoord);
 		}
 		//try to move to the new target. If fail return false
 		if (!PlotbotControl.getInstance().moveTo(targetCoord, true)) {

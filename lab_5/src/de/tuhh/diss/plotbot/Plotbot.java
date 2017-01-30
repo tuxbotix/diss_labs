@@ -31,22 +31,22 @@ public class Plotbot {
 			if (s != null) {
 				//
 				//
-				// PlotbotControl.getInstance().moveArm(0);
-				// Delay.msDelay(500);
-				// LCD.drawString("test 2, 40d", 0,3);
-				// PlotbotControl.getInstance().moveArmToRaw(Robot.armAngleToMotorAngle(55),
-				// false);
-				// LCD.drawString(Motor.A.getPosition()+"armpos", 0,3);
-				// Delay.msDelay(2000);
-				// LCD.drawString("test 3, -40d", 0,3);
-				// PlotbotControl.getInstance().moveArmToRaw(Robot.armAngleToMotorAngle(-40),false);
-				// LCD.drawString(Motor.A.getPosition()+"armpos", 0,3);
-				//
-				// Delay.msDelay(500);
-				// LCD.drawString("test 4, 0,0", 0,3);
-				// PlotbotControl.getInstance().movePen(true);
-				//
-				// PlotbotControl.getInstance().moveTo(new Coord(0,0));
+//				 PlotbotControl.getInstance().moveTo(new Coord(0,0));
+//				 Delay.msDelay(500);
+//				 LCD.drawString("test 2, 40d", 0,3);
+//				 PlotbotControl.getInstance().moveArmToRaw(Robot.armAngleToMotorAngle(40),
+//				 false);
+//				 LCD.drawString(Motor.A.getPosition()+"armpos", 0,3);
+//				 Delay.msDelay(2000);
+//				 LCD.drawString("test 3, -40d", 0,3);
+//				 PlotbotControl.getInstance().moveArmToRaw(Robot.armAngleToMotorAngle(-40),false);
+//				 LCD.drawString(Motor.A.getPosition()+"armpos", 0,3);
+				
+//				 Delay.msDelay(500);
+//				 LCD.drawString("test 4, 0,0", 0,3);
+//				 PlotbotControl.getInstance().movePen(true);
+				
+//				 PlotbotControl.getInstance().moveTo(new Coord(0,0));
 				// Delay.msDelay(500);
 				// LCD.drawString("test 5, 50,0", 0,3);
 				// PlotbotControl.getInstance().moveTo(new Coord(50,0));
