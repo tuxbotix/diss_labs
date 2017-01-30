@@ -16,8 +16,8 @@ public class MainMenu {
 	private TextMenu menu;
 
 	private final int Y_UPPER_BOUND = 230;
-	private final int RECT_X_SHIFT = 20;
-	private final int ANCHOR_X_SHIFT = -20;
+	private final int RECT_X_SHIFT = 30;
+	private final int ANCHOR_X_SHIFT = -30;
 
 	/**
 	 * Creates a new MainMenu object.
@@ -48,7 +48,7 @@ public class MainMenu {
 
 		case 0: {// anchor
 			int width = getIntFromButtons("Width", 3);
-			toDraw = new Anchor(width, ANCHOR_X_SHIFT);
+			toDraw = new Anchor(width, new Coord(ANCHOR_X_SHIFT, Y_UPPER_BOUND));
 			break;
 		}
 

@@ -8,21 +8,24 @@ import lejos.nxt.LCD;
  * Modify this class and PlotbotControl class when changing robot/ configuration
  * 
  * Some of the functionality Coord class supposed to have is ported to this
- * class. Reason : Separation of geometric primitives, operations from robot's
+ * class. Reason : Seperation of geometric primitives, operations from robot's
  * kinematics
+ * 
+ * @author darshana
  * 
  */
 public class Robot {
-	public static final int LIGHT_THRESHOLD = 500;
+	public static final int LIGHT_THRESHOLD = 500;// robot 3 600
 	public static final int WHEEL_GEAR_RATIO = 5;
 	public static final int ARM_GEAR_RATIO = 84;
 	public static final int JOINT_TO_LIGHT_SENSOR = 105;
 	public static final int JOINT_TO_PEN = 80;
 	public static final int WHEEL_DIAMETER = 56;
 
-	// At worst case, 19 deg per mm at arm rotation limits.(for motor)
+	// At worst case, 19deg per mm at arm rotation limits.(for motor)
 	// 10 deg per mm for wheel motors;
-	// So, setting speed for wheel motors to be half of arm motors will equalize things.
+	// So; setting speed for wheel motors to be half of arm motors will kind of
+	// equalize things.
 	public static final float ARM_MOTOR_MAX_SPEED = 600;
 	public static final float ARM_MOTOR_CAL_SPEED = 600;
 	public static final float WHEEL_MOTOR_MAX_SPEED = ARM_MOTOR_MAX_SPEED - 100;
@@ -30,11 +33,11 @@ public class Robot {
 	public static final int ARM_MOTOR_CAL_ACC = 3000;
 	public static final int WHEEL_MOTOR_ACC = 4000;
 	
-	public static final int PEN_DOWN_ROTATION = -420;// motor angle rotation needed to lower the pen from top.
+	public static final int PEN_DOWN_ROTATION = -420;// rotation needed to lower the pen from top.
 
 	public static final int TIMER_FREQ = 20; // in Hertz
 	private static final int Y_AXIS_MIN = 0;
-	private static final int Y_AXIS_MAX = 250;// in mm
+	private static final int Y_AXIS_MAX = 250;// 250mm
 
 	public static final double DISTANCE_INCREMENT = 2;
 	public static final double DEAD_BAND = 1;
@@ -44,8 +47,9 @@ public class Robot {
 	/**
 	 * Convert arm angle to Motor angle
 	 * 
-	 * @param angle of arm. Use double for more precision
-	 * @return angle for motor in degrees, type int (motor accepts only int type)
+	 * @param angle
+	 *            of arm. Use double for precision
+	 * @return angle for motor in degrees, type int (motor accept int type)
 	 */
 	public static int armAngleToMotorAngle(double angle) {
 		return (int) -angle * ARM_GEAR_RATIO;
@@ -54,7 +58,8 @@ public class Robot {
 	/**
 	 * Convert motor angle to arm angle
 	 * 
-	 * @param Motor angle
+	 * @param Motor
+	 *            angle
 	 * @return Arm angle
 	 */
 	public static double motorAngleToArmAngle(double angle) {
@@ -92,12 +97,12 @@ public class Robot {
 	 * 
 	 * 3. Trigonometry!
 	 * 
-	 * 4. Distance traveled by wheels is given relative to initial joint
+	 * 4. Distance travelled by wheels is given relative to initial joint
 	 * position (0,-80 on global coordinates) so we convert to global
 	 * coordinates by subtracting the arm length.
 	 * 
 	 * @param jointY
-	 *            Distance motor traveled since calibration (motor position
+	 *            Distance motor travelled since calibration (motor position
 	 *            reset on calibration)
 	 * @param armAngle
 	 * @return

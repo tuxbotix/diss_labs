@@ -199,4 +199,17 @@ public class Line implements Plottable {
 				+ (dy * (curPosition.y() - y1));
 		return new Coord(((dx * lambda) + x1), ((dy * lambda) + y1));
 	}
+	
+	/**
+	 * Translate a line by given X and Y values
+	 * 
+	 * @param x
+	 * @param y
+	 */
+	public void translate(double x, double y){
+		this.startPoint.translate(x, y);
+		this.endPoint.translate(x, y);
+		length = Coord.getDistance(startPoint, endPoint);
+		slopeAngle = Math.atan2((endPoint.y() - startPoint.y()), (endPoint.x() - startPoint.x()));		
+	}
 }
